@@ -10,5 +10,13 @@ type Google interface {
 }
 
 type google struct {
-	config config.Config
+	config *config.Config
+}
+
+func NewGoogle(cfg *config.Config) Google {
+	return &google{config: cfg}
+}
+
+func (g google) GetBooks(search BookSearch) {
+
 }

@@ -3,7 +3,7 @@ package main
 import "campfirereads/internal/server"
 
 func main() {
-	srv, err := server.New("API")
+	srv, err := server.NewAPI()
 	if err != nil {
 		panic(err)
 	}

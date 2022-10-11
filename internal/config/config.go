@@ -8,7 +8,9 @@ type Config struct {
 }
 
 func Load(prefix string) (*Config, error) {
-	cfg := &Config{}
+	cfg := &Config{
+		Port: 8080,
+	}
 	err := envconfig.Process(prefix, cfg)
 	if err != nil {
 		return nil, err
