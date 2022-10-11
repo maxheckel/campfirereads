@@ -3,6 +3,7 @@ package server
 import (
 	"campfirereads/internal/handler"
 	"campfirereads/internal/service"
+	"github.com/gin-gonic/gin"
 )
 
 func NewAPI() (*App, error) {
@@ -12,6 +13,8 @@ func NewAPI() (*App, error) {
 	}
 	h := handler.NewAPI(service.NewGoogle(srv.Config))
 	srv.Gin.GET("/search", h.Search)
-
+	srv.Gin.GET("/", func(context *gin.Context) {
+		context.Writer.Write([]byte("OK"))
+	})
 	return srv, nil
 }
