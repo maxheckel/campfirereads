@@ -2,6 +2,8 @@
 
 ### Starting the server
 #### API
+You'll need to install https://github.com/cosmtrek/air
+
 Set up an air config in a file called `.air.toml`, here is an example:
 
 ```
@@ -43,6 +45,9 @@ tmp_dir = "tmp"
 [screen]
   clear_on_rebuild = false
 ```
+
+Once that exists just run `air`
+
 
 #### UI
 Just CD into static and run `npm run dev`
