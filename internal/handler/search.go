@@ -2,7 +2,6 @@ package handler
 
 import (
 	"campfirereads/internal/domain"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"sync"
 )
@@ -30,7 +29,6 @@ func (a *APIHandler) ISBN(c *gin.Context) {
 
 	wg := sync.WaitGroup{}
 	for index := range res {
-		fmt.Println(res[index].Type)
 		wg.Add(1)
 		go func(index int) {
 			err := a.amazon.ListingToPriceInCents(res[index])
