@@ -11,7 +11,7 @@ func NewAPI() (*App, error) {
 	if err != nil {
 		panic(err)
 	}
-	h := handler.NewAPI(service.NewGoogle(srv.Config))
+	h := handler.NewAPI(service.NewGoogle(srv.Config), service.NewAmazon())
 	srv.Gin.GET("/search", h.Search)
 	srv.Gin.GET("/isbn/:isbn", h.ISBN)
 	// Healthcheck

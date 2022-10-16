@@ -2,7 +2,9 @@ package handler
 
 import (
 	"campfirereads/internal/domain"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"sync"
 )
 
 type Search interface {
@@ -20,10 +22,24 @@ func (a *APIHandler) Search(c *gin.Context) {
 }
 
 func (a *APIHandler) ISBN(c *gin.Context) {
-	res, err := a.google.GetISBN(c.Param("isbn"))
+	res, err := a.amazon.ISBNToListings(c.Param("isbn"))
 	if err != nil {
 		c.JSON(500, gin.H{"error": err})
 		return
 	}
+	wg := sync.WaitGroup{}
+	for index := range res {
+		fmt.Println(res[index].Type)
+		wg.Add(1)
+		go func(index int) {
+			err := a.amazon.ListingToPriceInCents(res[index])
+			if err != nil {
+				panic(err)
+			}
+			wg.Done()
+		}(index)
+	}
+	wg.Wait()
+
 	c.JSON(200, res)
 }
