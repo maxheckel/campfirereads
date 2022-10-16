@@ -27,6 +27,7 @@ func (a *APIHandler) ISBN(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err})
 		return
 	}
+
 	wg := sync.WaitGroup{}
 	for index := range res {
 		fmt.Println(res[index].Type)

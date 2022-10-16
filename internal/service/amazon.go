@@ -41,6 +41,7 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 		return err
 	}
 	req.Header.Add("User-Agent", "CampfireReads")
+	req.Header.Add("Cookie", "i18n-prefs=USD; session-id=144-1565741-9708016; session-id-time=2082787201l; ubid-main=135-4512388-1882035")
 	if err != nil {
 		return err
 	}
@@ -74,6 +75,8 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://www.amazon.com/s?k=%s&i=stripbooks", ISBN), nil)
 	req.Header.Add("User-Agent", "CampfireReads")
+	req.Header.Add("Cookie", "i18n-prefs=USD; session-id=144-1565741-9708016; session-id-time=2082787201l; ubid-main=135-4512388-1882035")
+	fmt.Println(req.URL)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +88,11 @@ func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
 	}
 
 	doc, err := goquery.NewDocumentFromReader(html.Body)
+	fmt.Println(doc.Html())
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	listings := []*AmazonListing{}
 
 	doc.Find("a.a-size-base").Each(func(i int, selection *goquery.Selection) {
