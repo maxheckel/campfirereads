@@ -1,6 +1,8 @@
 package handler
 
-import "campfirereads/internal/service"
+import (
+	"github.com/maxheckel/campfirereads/internal/service"
+)
 
 type APIHandler struct {
 	google service.Google

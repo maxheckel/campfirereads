@@ -1,6 +1,6 @@
 package main
 
-import "campfirereads/internal/server"
+import "github.com/maxheckel/campfirereads/internal/server"
 
 func main() {
 	srv, err := server.NewAPI()

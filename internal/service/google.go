@@ -1,10 +1,10 @@
 package service
 
 import (
-	"campfirereads/internal/config"
-	"campfirereads/internal/domain"
 	"encoding/json"
 	"fmt"
+	"github.com/maxheckel/campfirereads/internal/config"
+	"github.com/maxheckel/campfirereads/internal/domain"
 	"io"
 	"net/http"
 	"net/url"

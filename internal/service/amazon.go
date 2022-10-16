@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AmazonListing struct {
@@ -15,6 +16,7 @@ type AmazonListing struct {
 	ISBN         string   `json:"isbn"`
 	Type         string   `json:"type"`
 	PriceInCents int32    `json:"price_in_cents"`
+	CrawlDate    time.Time
 }
 
 type Amazon interface {
@@ -41,7 +43,7 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 		return err
 	}
 	req.Header.Add("User-Agent", "CampfireReads")
-	req.Header.Add("Cookie", "i18n-prefs=USD; session-id=144-1565741-9708016; session-id-time=2082787201l; ubid-main=135-4512388-1882035")
+	req.Header.Add("Cookie", AmazonSession.String())
 	if err != nil {
 		return err
 	}
@@ -100,6 +102,7 @@ func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
 			}
 
 			listing := &AmazonListing{}
+			listing.CrawlDate = time.Now()
 			href, _ := selection.Attr("href")
 			listing.ISBN = ISBN
 			listing.Type = strings.ToLower(selection.Text())

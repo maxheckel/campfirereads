@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"campfirereads/internal/domain"
 	"github.com/gin-gonic/gin"
+	"github.com/maxheckel/campfirereads/internal/domain"
 	"sync"
 )
 

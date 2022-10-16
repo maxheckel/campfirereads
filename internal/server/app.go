@@ -1,9 +1,9 @@
 package server
 
 import (
-	"campfirereads/internal/config"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/maxheckel/campfirereads/internal/config"
 )
 
 type App struct {

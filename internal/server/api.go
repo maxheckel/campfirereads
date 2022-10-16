@@ -1,9 +1,9 @@
 package server
 
 import (
-	"campfirereads/internal/handler"
-	"campfirereads/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/maxheckel/campfirereads/internal/handler"
+	"github.com/maxheckel/campfirereads/internal/service"
 )
 
 func NewAPI() (*App, error) {
