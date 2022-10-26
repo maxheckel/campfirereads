@@ -1,11 +1,14 @@
 # Campfire Reads
 
+Prerequisits for local development:
+* Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
 ## Docker Setup
 Add a `.api.env` and `.ui.env` file that is a copy of `.api.env.exaple` and `.ui.env.example` filled in with your values.
 
 **IMPORTANT:** the ui.env file is a dotenv file and the api.env file is a docker env file, the ui.env file should us `=` syntax and the api.env file should use `:` syntax to assign values. 
 
-Then simply run `docker-compose up`
+Then simply run `docker-compose up` in the root folder of this project
 
 The hosts are as follows:
 * API: localhost:8080
