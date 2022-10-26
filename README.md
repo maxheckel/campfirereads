@@ -1,6 +1,18 @@
 # Campfire Reads
 
-### Starting the server
+## Docker Setup
+Add a `.api.env` file that is a copy of `.api.env.exaple` filled in with your values.
+
+Then simply run `docker-compose up`
+
+The hosts are as follows:
+* API: localhost:8080
+* UI: localhost:4200
+* Postgres: localhost:5432
+
+Default Postgres username is `root` default password is `secret`
+
+### Local Runs
 #### API
 You'll need to install https://github.com/cosmtrek/air
 
