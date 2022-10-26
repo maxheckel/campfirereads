@@ -12,7 +12,7 @@ import (
 
 type Google interface {
 	GetBooks(search domain.BookSearch) (*domain.BookSearchResult, error)
-	GetISBN(isbn string) (*domain.SearchResult, error)
+	GetISBN(isbn string) (*domain.Book, error)
 }
 
 type google struct {
@@ -23,10 +23,10 @@ func NewGoogle(cfg *config.Config) Google {
 	return &google{config: cfg}
 }
 
-func (g google) GetISBN(isbn string) (*domain.SearchResult, error) {
-	res := &domain.SearchResult{}
+func (g google) GetISBN(isbn string) (*domain.Book, error) {
+	res := &domain.BookSearchResult{}
 
-	query, err := url.Parse(fmt.Sprintf("https://www.googleapis.com/customsearch/v1?key=%s&lr=lang_en&cx=5002d862df2554bc7&q=%s", g.config.GoogleAPIKey, isbn))
+	query, err := url.Parse(fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?langRestrict=en&q=isbn:%s", isbn))
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (g google) GetISBN(isbn string) (*domain.SearchResult, error) {
 		return nil, err
 	}
 	err = json.Unmarshal(body, res)
-	return res, err
+	return &res.Items[0], err
 }
 
 func (g google) GetBooks(search domain.BookSearch) (*domain.BookSearchResult, error) {

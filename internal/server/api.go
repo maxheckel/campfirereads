@@ -11,9 +11,10 @@ func NewAPI() (*App, error) {
 	if err != nil {
 		panic(err)
 	}
-	h := handler.NewAPI(service.NewGoogle(srv.Config), service.NewAmazon())
+	h := handler.NewAPI(service.NewGoogle(srv.Config), service.NewAmazon(), service.NewNYT(srv.Config))
 	srv.Gin.GET("/search", h.Search)
 	srv.Gin.GET("/isbn/:isbn", h.ISBN)
+	srv.Gin.GET("/bestsellers", h.GetBestSellers)
 	// Healthcheck
 	srv.Gin.GET("/", func(context *gin.Context) {
 		context.Writer.Write([]byte("OK"))

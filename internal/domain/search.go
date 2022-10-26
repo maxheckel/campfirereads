@@ -1,16 +1,16 @@
 package domain
 
 type BookSearchResult struct {
-	Kind       string   `json:"kind"`
-	TotalItems int      `json:"totalItems"`
-	Items      []Result `json:"items"`
+	Kind       string `json:"kind"`
+	TotalItems int    `json:"totalItems"`
+	Items      []Book `json:"items"`
 }
 
 type BookSearch struct {
 	Query string
 }
 
-type Result struct {
+type Book struct {
 	Kind       string     `json:"kind"`
 	Id         string     `json:"id"`
 	Etag       string     `json:"etag"`

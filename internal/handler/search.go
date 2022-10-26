@@ -17,7 +17,7 @@ func (a *APIHandler) Search(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, res)
+	c.JSON(200, res.Items)
 }
 
 func (a *APIHandler) ISBN(c *gin.Context) {

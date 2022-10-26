@@ -90,6 +90,9 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 			}
 		})
 	}
+	if currentListPrice == 0 {
+		currentListPrice = -1
+	}
 	listing.PriceInCents = int32(currentListPrice)
 	return err
 }
