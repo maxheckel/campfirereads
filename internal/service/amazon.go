@@ -60,6 +60,9 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 	var cents int
 	doc.Find("*[data-a-color|=\"price\"]").Each(func(i int, selection *goquery.Selection) {
 		prices := strings.Split(selection.Text(), "$")
+		if len(prices) == 1 {
+
+		}
 		for _, price := range prices {
 			if price == "" || strings.Count(price, ".") > 1 {
 				continue
@@ -70,6 +73,23 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 			}
 		}
 	})
+	if currentListPrice == 0 {
+		doc.Find("#price").Each(func(i int, selection *goquery.Selection) {
+			prices := strings.Split(selection.Text(), "$")
+			if len(prices) == 1 {
+
+			}
+			for _, price := range prices {
+				if price == "" || strings.Count(price, ".") > 1 {
+					continue
+				}
+				cents, err = strconv.Atoi(strings.ReplaceAll(price, ".", ""))
+				if cents > currentListPrice {
+					currentListPrice = cents
+				}
+			}
+		})
+	}
 	listing.PriceInCents = int32(currentListPrice)
 	return err
 }
