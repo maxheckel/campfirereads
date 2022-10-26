@@ -12,10 +12,9 @@ services:
     build:
       context: .
       dockerfile: infra/ui/Dockerfile
-    environment:
-      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./static:/app
+      - ./.ui.env:/app/.env
     ports:
       - "4200:4200"
   db:

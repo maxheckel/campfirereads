@@ -1,7 +1,9 @@
 # Campfire Reads
 
 ## Docker Setup
-Add a `.api.env` file that is a copy of `.api.env.exaple` filled in with your values.
+Add a `.api.env` and `.ui.env` file that is a copy of `.api.env.exaple` and `.ui.env.example` filled in with your values.
+
+**IMPORTANT:** the ui.env file is a dotenv file and the api.env file is a docker env file, the ui.env file should us `=` syntax and the api.env file should use `:` syntax to assign values. 
 
 Then simply run `docker-compose up`
 
@@ -63,3 +65,7 @@ Once that exists just run `air`
 
 #### UI
 Just CD into static and run `npm run dev`
+
+##### Environments
+
+You'll need to set your environment values for the API server by adding a `.env` file in the `static` folder with your environment variables.  You can use `.ui.example` as an example. 
