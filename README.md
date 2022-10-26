@@ -14,7 +14,7 @@ The hosts are as follows:
 
 Default Postgres username is `root` default password is `secret`
 
-### Local Runs
+### Local Setup (you should probably just use docker instead)
 #### API
 You'll need to install https://github.com/cosmtrek/air
 
