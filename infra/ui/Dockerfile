@@ -1,16 +1,10 @@
 FROM node:lts-alpine
 
-RUN npm install -g http-server
-
+RUN mkdir -p /app
 WORKDIR /app
+COPY ./static /app
+RUN npm install -g @vue/cli
 
-COPY static/package*.json ./
+EXPOSE 4200
 
-RUN npm install
-
-COPY ./static .
-
-RUN npm run build
-
-EXPOSE 8080
-CMD ["http-server", "dist"]
+CMD ["npm", "run", "dev", "--",  "--port", "4200", "--host"]

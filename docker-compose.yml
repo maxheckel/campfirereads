@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  api:
+    build: ./infra/api
+    volumes:
+      - .:/app
+    env_file:
+      - .api.env
+    ports:
+      - "8080:8080"
+  web:
+    build:
+      context: .
+      dockerfile: infra/ui/Dockerfile
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./static:/app
+    ports:
+      - "4200:4200"
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: root
