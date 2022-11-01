@@ -10,7 +10,7 @@ import (
 )
 
 type NYT interface {
-	GetBestSellers() ([]domain.BestSeller, error)
+	GetBestSellers() (*domain.AllListsBestSellers, error)
 }
 
 type nyt struct {
@@ -21,12 +21,12 @@ func NewNYT(cfg *config.Config) NYT {
 	return &nyt{cfg: cfg}
 }
 
-func (n *nyt) GetBestSellers() ([]domain.BestSeller, error) {
-	resp, err := http.Get(fmt.Sprintf("https://api.nytimes.com/svc/books/v3/lists//best-sellers/history.json?api-key=%s", n.cfg.NYTAPIKey))
+func (n *nyt) GetBestSellers() (*domain.AllListsBestSellers, error) {
+	resp, err := http.Get(fmt.Sprintf("https://api.nytimes.com/svc/books/v3/lists/full-overview.json?api-key=%s", n.cfg.NYTAPIKey))
 	if err != nil {
 		return nil, err
 	}
-	res := &domain.BestSellers{}
+	res := &domain.AllListsBestSellers{}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
@@ -37,5 +37,5 @@ func (n *nyt) GetBestSellers() ([]domain.BestSeller, error) {
 	if err != nil {
 		return nil, err
 	}
-	return res.Results, nil
+	return res, nil
 }

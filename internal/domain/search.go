@@ -11,12 +11,12 @@ type BookSearch struct {
 }
 
 type Book struct {
-	Kind       string     `json:"kind"`
-	Id         string     `json:"id"`
-	Etag       string     `json:"etag"`
-	SelfLink   string     `json:"selfLink"`
-	VolumeInfo VolumeInfo `json:"volumeInfo"`
-	SaleInfo   SaleInfo   `json:"saleInfo"`
+	Kind       string      `json:"kind"`
+	Id         string      `json:"id"`
+	Etag       string      `json:"etag"`
+	SelfLink   string      `json:"selfLink"`
+	VolumeInfo *VolumeInfo `json:"volumeInfo"`
+	SaleInfo   SaleInfo    `json:"saleInfo"`
 	AccessInfo struct {
 		Country                string `json:"country"`
 		Viewability            string `json:"viewability"`

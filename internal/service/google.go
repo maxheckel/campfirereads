@@ -8,11 +8,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
+	"time"
 )
 
 type Google interface {
 	GetBooks(search domain.BookSearch) (*domain.BookSearchResult, error)
-	GetISBN(isbn string) (*domain.Book, error)
+	GetISBN(isbn string, sleep int) (*domain.Book, error)
 }
 
 type google struct {
@@ -23,7 +25,7 @@ func NewGoogle(cfg *config.Config) Google {
 	return &google{config: cfg}
 }
 
-func (g google) GetISBN(isbn string) (*domain.Book, error) {
+func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
 	res := &domain.BookSearchResult{}
 
 	query, err := url.Parse(fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?langRestrict=en&q=isbn:%s", isbn))
@@ -42,6 +44,17 @@ func (g google) GetISBN(isbn string) (*domain.Book, error) {
 		return nil, err
 	}
 	err = json.Unmarshal(body, res)
+	if len(res.Items) == 0 {
+		if response.StatusCode == 429 && strings.Contains(string(body), "RATE_LIMIT_EXCEEDED") {
+			if sleep >= 5 {
+				return nil, err
+			}
+			fmt.Printf("Backoff on ISBN %s, waiting %d seconds\n", isbn, sleep)
+			time.Sleep(time.Second * time.Duration(sleep))
+			return g.GetISBN(isbn, sleep+1)
+		}
+		return nil, err
+	}
 	return &res.Items[0], err
 }
 
