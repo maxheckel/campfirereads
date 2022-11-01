@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/maxheckel/campfirereads/internal/config"
 )
@@ -24,5 +23,5 @@ func New(configPrefix string) (*App, error) {
 }
 
 func (a *App) Start() error {
-	return a.Gin.Run(fmt.Sprintf(":%d", a.Config.Port))
+	return a.Gin.Run()
 }

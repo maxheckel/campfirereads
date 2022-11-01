@@ -3,33 +3,31 @@ package service
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/maxheckel/campfirereads/internal/domain"
+	"github.com/maxheckel/campfirereads/internal/service/cache"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
-type AmazonListing struct {
-	URL          *url.URL `json:"url"`
-	ISBN         string   `json:"isbn"`
-	Type         string   `json:"type"`
-	PriceInCents int32    `json:"price_in_cents"`
-	CrawlDate    time.Time
-}
-
 type Amazon interface {
-	ISBNToListings(ISBN string) ([]*AmazonListing, error)
-	ListingToPriceInCents(listing *AmazonListing) error
+	ISBNToListings(ISBN string) ([]*domain.AmazonListing, error)
+	ListingToPriceInCents(listing *domain.AmazonListing) error
+	ISBNToPrices(ISBN string) ([]*domain.AmazonListing, error)
 }
 
 type amazon struct {
 	bookLinksText []string
+	cache         cache.Cache
 }
 
-func NewAmazon() Amazon {
+func NewAmazon(cache cache.Cache) Amazon {
 	return &amazon{
+		cache: cache,
 		bookLinksText: []string{
 			"paperback",
 			"hardcover",
@@ -37,7 +35,7 @@ func NewAmazon() Amazon {
 	}
 }
 
-func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
+func (a amazon) ListingToPriceInCents(listing *domain.AmazonListing) error {
 	req, err := http.NewRequest("GET", listing.URL.String(), nil)
 	if err != nil {
 		return err
@@ -76,9 +74,6 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 	if currentListPrice == 0 {
 		doc.Find("#price").Each(func(i int, selection *goquery.Selection) {
 			prices := strings.Split(selection.Text(), "$")
-			if len(prices) == 1 {
-
-			}
 			for _, price := range prices {
 				if price == "" || strings.Count(price, ".") > 1 {
 					continue
@@ -97,7 +92,7 @@ func (a amazon) ListingToPriceInCents(listing *AmazonListing) error {
 	return err
 }
 
-func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
+func (a amazon) ISBNToListings(ISBN string) ([]*domain.AmazonListing, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://www.amazon.com/s?k=%s&i=stripbooks", ISBN), nil)
 	req.Header.Add("User-Agent", "CampfireReads")
 	req.Header.Add("Cookie", AmazonSession.String())
@@ -116,7 +111,7 @@ func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
 		log.Fatal(err)
 	}
 
-	listings := []*AmazonListing{}
+	listings := []*domain.AmazonListing{}
 
 	doc.Find("a.a-size-base").Each(func(i int, selection *goquery.Selection) {
 		for _, textToFind := range a.bookLinksText {
@@ -124,7 +119,7 @@ func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
 				continue
 			}
 
-			listing := &AmazonListing{}
+			listing := &domain.AmazonListing{}
 			listing.CrawlDate = time.Now()
 			href, _ := selection.Attr("href")
 			listing.ISBN = ISBN
@@ -136,7 +131,7 @@ func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
 			listings = append(listings, listing)
 		}
 	})
-	actualListings := []*AmazonListing{}
+	actualListings := []*domain.AmazonListing{}
 	for _, listing := range listings {
 		if !listingExists(listing.Type, actualListings) {
 			actualListings = append(actualListings, listing)
@@ -146,7 +141,41 @@ func (a amazon) ISBNToListings(ISBN string) ([]*AmazonListing, error) {
 	return actualListings, err
 }
 
-func listingExists(listingType string, listings []*AmazonListing) bool {
+func (a amazon) ISBNToPrices(ISBN string) ([]*domain.AmazonListing, error) {
+	cacheKey := fmt.Sprintf("listings-%s", ISBN)
+	cacheVal, err := a.cache.Read(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+	if listings, ok := cacheVal.(*domain.AmazonListings); ok {
+		return listings.Listings, nil
+	}
+	res, err := a.ISBNToListings(ISBN)
+	if err != nil {
+		return nil, err
+	}
+	wg := sync.WaitGroup{}
+	for index := range res {
+		wg.Add(1)
+		go func(index int) {
+			err := a.ListingToPriceInCents(res[index])
+			if err != nil {
+				panic(err)
+			}
+			wg.Done()
+		}(index)
+	}
+	wg.Wait()
+	err = a.cache.Write(cacheKey, &domain.AmazonListings{
+		Listings: res,
+	}, 24*60*60)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func listingExists(listingType string, listings []*domain.AmazonListing) bool {
 	for _, listing := range listings {
 		if listing.Type == listingType {
 			return true

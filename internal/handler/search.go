@@ -10,6 +10,11 @@ type Search interface {
 	Search(c *gin.Context)
 }
 
+type GetBookResponse struct {
+	Book     *domain.Book            `json:"book"`
+	Listings []*domain.AmazonListing `json:"listings"`
+}
+
 func (a *APIHandler) Search(c *gin.Context) {
 	res, err := a.google.GetBooks(domain.BookSearch{Query: c.Query("query")})
 	if err != nil {
@@ -21,24 +26,33 @@ func (a *APIHandler) Search(c *gin.Context) {
 }
 
 func (a *APIHandler) ISBN(c *gin.Context) {
-	res, err := a.amazon.ISBNToListings(c.Param("isbn"))
+	ISBN := c.Param("isbn")
+	var amazonListings []*domain.AmazonListing
+	var book *domain.Book
+	var err error
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func(wg *sync.WaitGroup, isbn string, listings []*domain.AmazonListing) {
+		defer wg.Done()
+		amazonListings, err = a.amazon.ISBNToPrices(isbn)
+
+	}(&wg, ISBN, amazonListings)
+	wg.Add(1)
+	go func(wg *sync.WaitGroup, isbn string) {
+		defer wg.Done()
+
+		book, err = a.google.GetISBN(isbn, 0)
+
+	}(&wg, ISBN)
+	wg.Wait()
 	if err != nil {
 		c.JSON(500, gin.H{"error": err})
 		return
 	}
-
-	wg := sync.WaitGroup{}
-	for index := range res {
-		wg.Add(1)
-		go func(index int) {
-			err := a.amazon.ListingToPriceInCents(res[index])
-			if err != nil {
-				panic(err)
-			}
-			wg.Done()
-		}(index)
+	response := GetBookResponse{
+		Book:     book,
+		Listings: amazonListings,
 	}
-	wg.Wait()
 
-	c.JSON(200, res)
+	c.JSON(200, response)
 }

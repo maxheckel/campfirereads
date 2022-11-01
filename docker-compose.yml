@@ -17,9 +17,7 @@ services:
       - ./.ui.env:/app/.env
     ports:
       - "4200:4200"
-  db:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: secret
-      POSTGRES_USER: root
+  memcached:
+    image: docker.io/bitnami/memcached:1
+    ports:
+      - '11211:11211'

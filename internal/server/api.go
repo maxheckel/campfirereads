@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/maxheckel/campfirereads/internal/handler"
 	"github.com/maxheckel/campfirereads/internal/service"
+	"github.com/maxheckel/campfirereads/internal/service/cache"
 )
 
 func NewAPI() (*App, error) {
@@ -11,7 +12,20 @@ func NewAPI() (*App, error) {
 	if err != nil {
 		panic(err)
 	}
-	h := handler.NewAPI(service.NewGoogle(srv.Config), service.NewAmazon(), service.NewNYT(srv.Config))
+	var cacheService cache.Cache
+	switch srv.Config.CacheDriver {
+	case "memory":
+		cacheService = &cache.Memory{}
+	case "memcache-local":
+		cacheService = cache.NewMemcache(srv.Config.CacheAddress)
+	case "memcache-appengine":
+		cacheService = cache.NewAppEngineMemcache()
+	default:
+		cacheService = &cache.Memory{}
+
+	}
+
+	h := handler.NewAPI(service.NewGoogle(srv.Config, cacheService), service.NewAmazon(cacheService), service.NewNYT(srv.Config, cacheService), cacheService)
 	srv.Gin.Use(CORSMiddleware())
 	srv.Gin.GET("/search", h.Search)
 	srv.Gin.GET("/isbn/:isbn", h.ISBN)

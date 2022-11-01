@@ -3,3 +3,4 @@
 tmp/
 .api.env
 .ui.env
+app.yaml

@@ -25,16 +25,21 @@ type NYTListWithGoogleBooks struct {
 var (
 	todaysBestSellers             = BestSellerResponse{}
 	bestSellersStoredOn           *time.Time
-	bestSellersByCategory         = map[string][]*domain.Book{}
+	bestSellersByCategory         = map[string]*NYTListWithGoogleBooks{}
 	bestSellersByCategoryStoredOn = map[string]*time.Time{}
+	popularISBNs                  = []string{
+		"9780525463467", // my side of the mountain
+		"9780385056199", // where the red fern grows
+		"9780330351690", // into the wild
+		"9780060115456", // old yeller
+		"9780007136599", // the fellowship of the ring
+		"9780691014647", // walden
+		"9780061233326", // pilgrim at tinker creek
+	}
 )
 
 func (a *APIHandler) GetBestSellers(c *gin.Context) {
 	// If the last time it was stored was today
-	if bestSellersStoredOn != nil && time.Now().Sub(*bestSellersStoredOn).Hours() < 24 && len(todaysBestSellers.Lists) > 0 {
-		c.JSON(200, todaysBestSellers)
-		return
-	}
 	bestSellerNYT, err := a.nyt.GetBestSellers()
 	if err != nil {
 		c.JSON(500, gin.H{"error": err})
@@ -90,12 +95,7 @@ func (a *APIHandler) GetBestSellers(c *gin.Context) {
 		resList.List.Books = nil
 		res.Lists = append(res.Lists, resList)
 	}
-
-	todaysBestSellers = res
-	storedOn := time.Now()
-	bestSellersStoredOn = &storedOn
 	c.JSON(200, res)
-
 }
 
 func (a *APIHandler) booksFromISBNs(ISBNList []string) []*domain.Book {
@@ -123,9 +123,22 @@ func (a *APIHandler) Category(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "You must provide a category"})
 		return
 	}
-	// If the last time it was stored was today
-	if bestSellersByCategoryStoredOn[cat] != nil && time.Now().Sub(*bestSellersByCategoryStoredOn[cat]).Hours() < 24 && len(bestSellersByCategory[cat]) > 0 {
-		c.JSON(200, bestSellersByCategory[cat])
+	if cat == "popular" {
+		books := a.booksFromISBNs(popularISBNs)
+		c.JSON(200, NYTListWithGoogleBooks{
+			List: &domain.List{
+				ListID:          0,
+				ListName:        "",
+				ListNameEncoded: "",
+				DisplayName:     "Popular",
+				Updated:         "",
+				ListImage:       nil,
+				ListImageWidth:  nil,
+				ListImageHeight: nil,
+				Books:           nil,
+			},
+			Books: books,
+		})
 		return
 	}
 
@@ -140,23 +153,11 @@ func (a *APIHandler) Category(c *gin.Context) {
 	}
 	books := a.booksFromISBNs(ISBNs)
 
-	bestSellersByCategory[cat] = books
-	storedOn := time.Now()
-	bestSellersByCategoryStoredOn[cat] = &storedOn
-	c.JSON(200, books)
+	response := &NYTListWithGoogleBooks{List: &res.Results, Books: books}
+	c.JSON(200, response)
 }
 
 func (a *APIHandler) Popular(c *gin.Context) {
-	ISBNs := []string{
-		"9780525463467", // my side of the mountain
-		"9780385056199", // where the red fern grows
-		"9780330351690", // into the wild
-		"9780060115456", // old yeller
-		"9780007136599", // the fellowship of the ring
-		"9780691014647", // walden
-		"9780061233326", // pilgrim at tinker creek
-	}
-
-	books := a.booksFromISBNs(ISBNs)
+	books := a.booksFromISBNs(popularISBNs)
 	c.JSON(200, books)
 }

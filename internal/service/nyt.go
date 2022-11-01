@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/maxheckel/campfirereads/internal/config"
 	"github.com/maxheckel/campfirereads/internal/domain"
+	"github.com/maxheckel/campfirereads/internal/service/cache"
 	"io"
 	"net/http"
 )
@@ -15,14 +16,23 @@ type NYT interface {
 }
 
 type nyt struct {
-	cfg *config.Config
+	cfg   *config.Config
+	cache cache.Cache
 }
 
-func NewNYT(cfg *config.Config) NYT {
-	return &nyt{cfg: cfg}
+func NewNYT(cfg *config.Config, cache cache.Cache) NYT {
+	return &nyt{cfg: cfg, cache: cache}
 }
 
 func (n *nyt) GetCategory(category string) (*domain.GetBestSellerList, error) {
+	cacheKey := fmt.Sprintf("category-%s", category)
+	categoryCache, err := n.cache.Read(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+	if b, ok := categoryCache.(*domain.GetBestSellerList); ok {
+		return b, nil
+	}
 	resp, err := http.Get(fmt.Sprintf("https://api.nytimes.com/svc/books/v3/lists/current/%s.json?api-key=%s", category, n.cfg.NYTAPIKey))
 	if err != nil {
 		return nil, err
@@ -38,10 +48,18 @@ func (n *nyt) GetCategory(category string) (*domain.GetBestSellerList, error) {
 	if err != nil {
 		return nil, err
 	}
+	n.cache.Write(cacheKey, res, 24*60*60)
 	return res, nil
 }
 
 func (n *nyt) GetBestSellers() (*domain.AllListsBestSellers, error) {
+	bestSellersCache, err := n.cache.Read("bestsellers")
+	if err != nil {
+		return nil, err
+	}
+	if b, ok := bestSellersCache.(*domain.AllListsBestSellers); ok {
+		return b, nil
+	}
 	resp, err := http.Get(fmt.Sprintf("https://api.nytimes.com/svc/books/v3/lists/full-overview.json?api-key=%s", n.cfg.NYTAPIKey))
 	if err != nil {
 		return nil, err
@@ -57,5 +75,6 @@ func (n *nyt) GetBestSellers() (*domain.AllListsBestSellers, error) {
 	if err != nil {
 		return nil, err
 	}
+	n.cache.Write("bestsellers", res, 24*60*60)
 	return res, nil
 }
