@@ -6,6 +6,11 @@ type AllListsBestSellers struct {
 	NumResults int     `json:"num_results"`
 	Results    Results `json:"results"`
 }
+
+type GetBestSellerList struct {
+	Results List `json:"results"`
+}
+
 type BuyLinks struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
@@ -37,7 +42,7 @@ type Books struct {
 	WeeksOnList        int        `json:"weeks_on_list"`
 	BuyLinks           []BuyLinks `json:"buy_links"`
 }
-type Lists struct {
+type List struct {
 	ListID          int         `json:"list_id"`
 	ListName        string      `json:"list_name"`
 	ListNameEncoded string      `json:"list_name_encoded"`
@@ -49,10 +54,10 @@ type Lists struct {
 	Books           []Books     `json:"books"`
 }
 type Results struct {
-	BestsellersDate          string  `json:"bestsellers_date"`
-	PublishedDate            string  `json:"published_date"`
-	PublishedDateDescription string  `json:"published_date_description"`
-	PreviousPublishedDate    string  `json:"previous_published_date"`
-	NextPublishedDate        string  `json:"next_published_date"`
-	Lists                    []Lists `json:"lists"`
+	BestsellersDate          string `json:"bestsellers_date"`
+	PublishedDate            string `json:"published_date"`
+	PublishedDateDescription string `json:"published_date_description"`
+	PreviousPublishedDate    string `json:"previous_published_date"`
+	NextPublishedDate        string `json:"next_published_date"`
+	Lists                    []List `json:"lists"`
 }

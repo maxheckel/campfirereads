@@ -9,7 +9,7 @@
       <Book v-for="book in data.books.slice(0, 6)" :book="book"></Book>
     </div>
     <div class="flex justify-center">
-      <a class="inline-block bg-np-yellow-200 px-4 py-2 rounded-lg text-xl font-light cursor-pointer">View All</a>
+      <a :href="categoryLink" class="inline-block bg-np-yellow-200 px-4 py-2 rounded-lg text-xl font-light cursor-pointer">View All</a>
     </div>
   </div>
 
@@ -24,7 +24,8 @@ import Header from "./Header.vue";
 const props = defineProps({
   endpoint: String,
   title: String,
-  books: Array
+  books: Array,
+    categoryLink: String
 })
 
 const data = reactive({

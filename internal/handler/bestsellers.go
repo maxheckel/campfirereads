@@ -18,13 +18,15 @@ type BestSellerResponse struct {
 }
 
 type NYTListWithGoogleBooks struct {
-	List  *domain.Lists  `json:"list"`
+	List  *domain.List   `json:"list"`
 	Books []*domain.Book `json:"books"`
 }
 
 var (
-	todaysBestSellers   = BestSellerResponse{}
-	bestSellersStoredOn *time.Time
+	todaysBestSellers             = BestSellerResponse{}
+	bestSellersStoredOn           *time.Time
+	bestSellersByCategory         = map[string][]*domain.Book{}
+	bestSellersByCategoryStoredOn = map[string]*time.Time{}
 )
 
 func (a *APIHandler) GetBestSellers(c *gin.Context) {
@@ -113,6 +115,35 @@ func (a *APIHandler) booksFromISBNs(ISBNList []string) []*domain.Book {
 	}
 	wg.Wait()
 	return books
+}
+
+func (a *APIHandler) Category(c *gin.Context) {
+	cat := strings.TrimSpace(c.Param("category"))
+	if cat == "" {
+		c.JSON(500, gin.H{"error": "You must provide a category"})
+		return
+	}
+	// If the last time it was stored was today
+	if bestSellersByCategoryStoredOn[cat] != nil && time.Now().Sub(*bestSellersByCategoryStoredOn[cat]).Hours() < 24 && len(bestSellersByCategory[cat]) > 0 {
+		c.JSON(200, bestSellersByCategory[cat])
+		return
+	}
+
+	res, err := a.nyt.GetCategory(cat)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err})
+		return
+	}
+	ISBNs := []string{}
+	for _, book := range res.Results.Books {
+		ISBNs = append(ISBNs, book.PrimaryIsbn13)
+	}
+	books := a.booksFromISBNs(ISBNs)
+
+	bestSellersByCategory[cat] = books
+	storedOn := time.Now()
+	bestSellersByCategoryStoredOn[cat] = &storedOn
+	c.JSON(200, books)
 }
 
 func (a *APIHandler) Popular(c *gin.Context) {

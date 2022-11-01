@@ -48,8 +48,8 @@ onMounted(() => {
   </div>
 
   <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8  mt-20">
-    <BookList title="Popular Titles" :endpoint="'/popular'"></BookList>
-    <BookList class="my-20" v-for="list in data.bestSellerLists" :title="list.list.display_name" :books="list.books"></BookList>
+    <BookList title="Popular Titles" :endpoint="'/popular'"  :category-link="'/browse/popular'"></BookList>
+    <BookList class="my-20" v-for="list in data.bestSellerLists" :title="list.list.display_name" :books="list.books" :category-link="'/browse/'+list.list.list_name_encoded"></BookList>
   </div>
 
 

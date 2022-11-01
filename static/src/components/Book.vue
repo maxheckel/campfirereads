@@ -1,7 +1,8 @@
 <template>
   <div class="mt-8 mb-4 cover">
     <div class="flex items-center justify-center center">
-      <img class="w-full transition-transform" :src="imageUrl()">
+      <img v-if="imageUrl() != ''" class="w-full transition-transform" :src="imageUrl()">
+      <div v-else class="w-full h-[250px] bg-gray-200 block relative text-4xl overflow-hidden font-bold text-gray-300">{{props.book.volumeInfo.title}}</div>
     </div>
     <div class="w-full text-center px-2 mt-4">
       <span class="font-bold block"> {{props.book.volumeInfo.title}}</span>
