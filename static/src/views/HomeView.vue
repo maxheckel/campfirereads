@@ -29,8 +29,8 @@ onMounted(() => {
 
 
     <div class="z-10 w-full lg:w-1/2 lg:ml-[10%] relative left-0 p-8">
-      <div class="top"></div>
-      <div class="trapezoid text-np-yellow">
+      <div class="top relative z-0"></div>
+      <div class="trapezoid text-np-yellow z-10 mt-4 md:mt-0">
         <img src="/media/arrow.webp" class="absolute w-20 right-20 z-10 -top-10">
         <div class="z-10 text-4xl relative px-10 -mt-2 lg:-mt-6 float-left" style="font-family: Freehand">
           Welcome To
@@ -49,7 +49,7 @@ onMounted(() => {
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8  mt-20">
+  <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8  mt-20 px-4">
     <BookList title="Popular Titles" :endpoint="'/popular'"  :category-link="'/browse/popular'"></BookList>
     <BookList v-if="!data.loading" class="my-20" v-for="list in data.bestSellerLists" :title="list.list.display_name" :books="list.books" :category-link="'/browse/'+list.list.list_name_encoded"></BookList>
     <div class="grid-cols-2 md:grid-cols-6 gap-10 grid mt-20" v-if="data.loading">
@@ -76,9 +76,12 @@ onMounted(() => {
   color: #D7C17F;
   border: 4px solid #F0E9CF;
 
-@media screen and (max-width: 1200px) and (min-width: 1000px) {
-  transform: skewY(10deg);
-}
+  @media screen and (max-width: 1200px) and (min-width: 1000px) {
+    transform: skewY(10deg);
+  }
+  @media screen and (max-width: 600px) {
+    transform: skewY(11deg);
+  }
 }
 .trapezoid {
   width: 100%;

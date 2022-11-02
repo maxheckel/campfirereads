@@ -1,8 +1,8 @@
 <template>
-  <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8 ">
+  <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8 p-4">
     <div class="grid md:grid-cols-[30%_70%] gap-4">
       <div>
-        <img v-if="!data.loading" :src="imageUrl()" class="shadow shadow-xlg w-full">
+        <img v-if="!data.loading" :src="imageUrl()" class="shadow shadow-xlg w-1/2 relative mx-auto md:w-full">
         <ShimmerBox v-else class="w-full h-[400px]"></ShimmerBox>
       </div>
       <div>
@@ -21,10 +21,10 @@
             <span class="block cursor-pointer text-gray-500" @click="data.showingFullDescription = false" v-if="data.showingFullDescription">Show less</span>
           </template>
 
-          <select class=" block p-2 px-6 border rounded-md rounded mt-4 text-lg" v-if="getListings().length > 1">
-            <option :selected="data.selectedListing === i" v-for="(listing, i) in getListings()">{{capitalize(listing.type)}} ${{(listing.price_in_cents+1000)/100}}</option>
+          <select v-model="data.selectedListing" class=" block p-2 px-6 border rounded-md rounded mt-4 text-lg" v-if="getListings().length > 1">
+            <option :value="i" :selected="data.selectedListing === i" v-for="(listing, i) in getListings()">{{capitalize(listing.type)}} ${{(listing.price_in_cents+1000)/100}}</option>
           </select>
-          <Button class="my-4 block" :text="'Add to Cart'"></Button>
+          <Button @click="formatAndAddToCart()" class="my-4 block" :text="'Add to Cart'"></Button>
         </template>
         <template v-else>
           <shimmer-box class="w-40 h-8 rounded rounded-full"/>
@@ -42,6 +42,7 @@ import {useRoute} from 'vue-router';
 import {onMounted, reactive} from "vue";
 import ShimmerBox from "../components/ShimmerBox.vue";
 import Button from "../components/Button.vue";
+import {cart, addToCart} from "../store/cart.js";
 
 const route = useRoute();
 const isbn = route.params.isbn
@@ -53,6 +54,15 @@ const data = reactive({
   descriptionIsSmall: false,
   selectedListing: 1
 })
+
+function formatAndAddToCart(){
+  addToCart({
+    book: data.book.book,
+    listing: data.book.listings[data.selectedListing]
+  })
+  document.body.scrollTop = document.documentElement.scrollTop = 0;
+
+}
 
 function capitalize(word) {
   return word

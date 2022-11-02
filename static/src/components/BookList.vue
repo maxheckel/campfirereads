@@ -5,7 +5,7 @@
     <div v-if="data.loading" class="relative w-full ml-auto text-center">
       <Loading class="relative mx-auto opacity-50"/>
     </div>
-    <div v-if="!data.loading" class="grid grid-cols-2 md:grid-cols-6 gap-10">
+    <div v-if="!data.loading" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-10">
       <Book v-for="book in data.books.slice(0, 6)" :book="book"></Book>
     </div>
     <div class="flex justify-center">

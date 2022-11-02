@@ -40,6 +40,8 @@ func (m *memcacheDriver) Read(key string) (interface{}, error) {
 		obj = &domain.GetBestSellerList{}
 	case AmazonListings:
 		obj = &domain.AmazonListings{}
+	default:
+		return res.Value, nil
 	}
 	err = json.Unmarshal(res.Value, obj)
 	return obj, err

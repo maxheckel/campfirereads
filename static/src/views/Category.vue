@@ -2,9 +2,9 @@
   <div>
     <div class="text-center p-8 bg-center bg-cover	" :style="{'background-image': 'url('+data.bgImage+')'}">
       <div class="z-10 w-full  relative left-0 p-8">
-        <div class="trapezoid text-np-yellow p-10 text-center">
+        <div class="trapezoid text-np-yellow p-10 text-center w-full lg:w-2/3 relative">
 
-          <Header :invert="true" class="text-white z-10 block relative" :width-override="'w-10'"
+          <Header :invert="true" class="text-white z-10 block mx-auto justify-center relative" :width-override="'w-10'"
                   :text="displayName()" :icon-path="'/media/arrowhead.svg'"></Header>
           <span class="text-np-yellow block relative z-10 md:text-2xl tracking-widest md:mt-4"
                 style="font-family: Freehand">
@@ -14,8 +14,8 @@
 
       </div>
     </div>
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8 ">
-      <div class="grid grid-cols-5 gap-8">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8 p-4">
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-8">
         <Book v-if="!data.loading" v-for="book in data.list?.books" :book="book"></Book>
         <ShimmerBox v-if="data.loading === true" v-for="i in new Array(15)"
                     class="w-full h-[250px] bg-gray-200"></ShimmerBox>

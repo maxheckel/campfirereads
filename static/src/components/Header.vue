@@ -1,5 +1,5 @@
 <template>
-  <h2 class="flex items-center md:text-4xl uppercase font-bold text-np-dark-brown">
+  <h2 class="flex items-center text-2xl md:text-4xl uppercase font-bold text-np-dark-brown">
     <img :class="getImageClasses()" class="hidden md:block inline-block mx-4" :src="props.iconPath"> -{{ props.text }}-<img :class="getImageClasses()" class="hidden md:block  inline-block mx-4"
                                                                                  :src="props.iconPath">
   </h2>
