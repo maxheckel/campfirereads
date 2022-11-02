@@ -16,6 +16,11 @@ export function addToCart(book){
     // }, 5000)
 }
 
+export function removeFromCartAtIndex(index){
+    cart.items.splice(index, 1)
+    localStorage.setItem('cart', JSON.stringify(cart))
+}
+
 
 
 export function loadFromLS(){

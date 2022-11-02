@@ -43,6 +43,7 @@ import {onMounted, reactive} from "vue";
 import ShimmerBox from "../components/ShimmerBox.vue";
 import Button from "../components/Button.vue";
 import {cart, addToCart} from "../store/cart.js";
+import {capitalize} from "../services/utils.js";
 
 const route = useRoute();
 const isbn = route.params.isbn
@@ -64,11 +65,6 @@ function formatAndAddToCart(){
 
 }
 
-function capitalize(word) {
-  return word
-      .toLowerCase()
-      .replace(/\w/, firstLetter => firstLetter.toUpperCase());
-}
 
 function imageUrl(){
   return data.book.book.volumeInfo.imageLinks.thumbnail.replace("edge=curl", "")
