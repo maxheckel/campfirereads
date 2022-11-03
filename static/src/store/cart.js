@@ -17,8 +17,10 @@ export function addToCart(book){
 }
 
 export function removeFromCartAtIndex(index){
-    cart.items.splice(index, 1)
-    localStorage.setItem('cart', JSON.stringify(cart))
+    if (confirm('Are you sure you would like to remove "'+cart.items[index].book.volumeInfo.title+'" from your cart?')){
+        cart.items.splice(index, 1)
+        localStorage.setItem('cart', JSON.stringify(cart))
+    }
 }
 
 

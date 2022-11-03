@@ -31,7 +31,7 @@ onMounted(() => {
       local_mall
       </span>
     </a>
-    <div v-if="cart.justAdded" class="absolute top-20 right-2 z-10 bg-np-dark-brown text-np-yellow w-2/3 md:w-80 shadow-xl p-4 -mt-4 rounded-md z-20">
+    <div v-if="cart.justAdded" class="absolute top-20 right-2 z-10 bg-white text-np-dark-brown border border-2 border-np-dark-brown w-2/3 md:w-80 shadow-xl p-4 -mt-4 rounded-md z-20">
       <div @click="cart.justAdded = false;" class="absolute top-2 right-4 text-xl font-bold  rounded-full cursor-pointer">
         x
       </div>
@@ -44,7 +44,7 @@ onMounted(() => {
           <span class="font-bold block">{{cart.latestItem.book?.volumeInfo.title}}</span>
           <span class="italic block">by {{cart.latestItem.book?.volumeInfo.authors.join(', ').trim(', ')}}</span>
           {{capitalize(cart.latestItem.listing.type)}} ${{(cart.latestItem.listing.price_in_cents+1000)/100}}
-          <a href="/cart"> <Button class="text-sm ml-auto float-right bg-black text-white mt-4 mr-4" :text="'Go to Cart'"></Button></a>
+          <a href="/cart"> <Button class="text-sm ml-auto float-right bg-transparent text-black border-black border border-2 hover:bg-black hover:text-white mt-4 mr-4" :text="'Go to Cart'"></Button></a>
         </div>
 
       </div>

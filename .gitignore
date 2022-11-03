@@ -4,3 +4,4 @@ tmp/
 .api.env
 .ui.env
 app.yaml
+static/.firebase
