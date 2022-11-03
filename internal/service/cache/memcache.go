@@ -55,7 +55,7 @@ func (m *memcacheDriver) Write(key string, obj interface{}, timeoutSeconds int32
 	item := &memcache.Item{
 		Key:        key,
 		Value:      bytes,
-		Flags:      0,
+		Flags:      100000,
 		Expiration: timeoutSeconds,
 	}
 	if _, ok := obj.(*domain.Book); ok {

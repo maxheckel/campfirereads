@@ -36,7 +36,8 @@ func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
 		return b, nil
 	}
 	res := &domain.BookSearchResult{}
-	query, err := url.Parse(fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?langRestrict=en&key=%s&q=isbn:%s", g.config.GoogleAPIKey, isbn))
+	reqURL := fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?langRestrict=en&key=%s&q=isbn:%s", g.config.GoogleAPIKey, isbn)
+	query, err := url.Parse(reqURL)
 	if err != nil {
 		return nil, err
 	}

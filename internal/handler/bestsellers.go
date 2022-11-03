@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/maxheckel/campfirereads/internal/domain"
 	"strings"
@@ -39,6 +40,24 @@ var (
 )
 
 func (a *APIHandler) GetBestSellers(c *gin.Context) {
+	cacheKey := "bestsellers-resp"
+	cache, err := a.cache.Read(cacheKey)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err})
+		return
+	}
+
+	if cachedResponseBytes, ok := cache.([]byte); ok {
+		res := BestSellerResponse{}
+		err = json.Unmarshal(cachedResponseBytes, &res)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err})
+			return
+		}
+		c.JSON(200, res)
+		return
+	}
+
 	// If the last time it was stored was today
 	bestSellerNYT, err := a.nyt.GetBestSellers()
 	if err != nil {
@@ -94,6 +113,11 @@ func (a *APIHandler) GetBestSellers(c *gin.Context) {
 		}
 		resList.List.Books = nil
 		res.Lists = append(res.Lists, resList)
+	}
+	err = a.cache.Write(cacheKey, res, 24*60*60)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err})
+		return
 	}
 	c.JSON(200, res)
 }

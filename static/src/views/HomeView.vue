@@ -17,8 +17,8 @@ onMounted(() => {
 </script>
 
 <template class="min-h-screen">
-  <div class=" bg-np-dark-brown mb-0 border-b-np-yellow-200 border-b-2 relative pt-10">
-    <div class="w-full overflow-hidden max-h-[500px] h-[500px] absolute top-0 z-0 bg-np-dark-brown ">
+  <div class="mb-0 border-b-np-yellow-200 border-b-2 relative pt-10 bg-center bg-cover"  style="background: url('/media/covers/01.jpg')">
+    <div class="w-full overflow-hidden max-h-[500px] h-[500px] absolute top-0 z-0">
       <video style="position: absolute; z-index: 0; top: 0; left: 0; width: 100%;" autoplay muted loop>
         <source src="/media/campfire-hq.mp4" type="video/mp4">
         Your browser does not support the video tag.
