@@ -2,6 +2,7 @@
 import BookList from "./../components/BookList.vue";
 import {onMounted, reactive} from "vue";
 import ShimmerBox from "../components/ShimmerBox.vue";
+import Search from "../components/Search.vue";
 const data = reactive({
   bestSellerLists: Object,
   loading: true
@@ -49,7 +50,8 @@ onMounted(() => {
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8  mt-20 px-4">
+  <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 md:mt-16  px-4">
+    <Search class="my-8"/>
     <BookList title="Popular Titles" :endpoint="'/popular'"  :category-link="'/browse/popular'"></BookList>
     <BookList v-if="!data.loading" class="my-20" v-for="list in data.bestSellerLists" :title="list.list.display_name" :books="list.books" :category-link="'/browse/'+list.list.list_name_encoded"></BookList>
     <div class="grid-cols-2 md:grid-cols-6 gap-10 grid mt-20" v-if="data.loading">
