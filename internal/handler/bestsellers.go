@@ -6,7 +6,6 @@ import (
 	"github.com/maxheckel/campfirereads/internal/domain"
 	"strings"
 	"sync"
-	"time"
 )
 
 type BestSellers interface {
@@ -24,11 +23,7 @@ type NYTListWithGoogleBooks struct {
 }
 
 var (
-	todaysBestSellers             = BestSellerResponse{}
-	bestSellersStoredOn           *time.Time
-	bestSellersByCategory         = map[string]*NYTListWithGoogleBooks{}
-	bestSellersByCategoryStoredOn = map[string]*time.Time{}
-	popularISBNs                  = []string{
+	popularISBNs = []string{
 		"9780525463467", // my side of the mountain
 		"9780385056199", // where the red fern grows
 		"9780330351690", // into the wild

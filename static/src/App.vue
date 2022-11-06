@@ -1,85 +1,53 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import {cart} from "./store/cart.js";
+import {RouterView} from 'vue-router'
+import {cart, loadFromLS} from "./store/cart.js";
 import {onMounted} from "vue";
-import {loadFromLS} from "./store/cart.js";
-import {capitalize} from "./services/utils.js";
-import Button from "./components/Button.vue";
+import AppHeader from "./components/AppHeader.vue";
+
 onMounted(() => {
   loadFromLS()
 })
 </script>
 
 <template class="min-h-screen">
-  <header class="w-full p-4 h-20 bg-np-green  flex items-center rounded-bl-lg rounded-br-lg -mb-2 z-10 relative block  shadow-lg">
-    <img src="/media/pine.svg" class="h-full mr-4 opacity-50">
-    <a href="/" class="sm:text-4xl text-lg font-bold sm:font-normal text-np-yellow uppercase font-light inline-block">
-      Campfire Reads
-      <div class="block  normal-case text-sm sm:text-lg text-center text-np-dark-brown" style="font-family: Freehand">
-        Premium Smoked Books
-      </div>
-    </a>
-    <a href="/cart" class="ml-auto cursor-pointer">
-      <div class="absolute top-0 right-0">
-        <div class="bg-np-yellow m-2 text-sm px-1 rounded-full rounded">
-          {{cart.items.length}}
-        </div>
-
-      </div>
-
-      <span class="material-symbols-outlined text-3xl text-np-dark-brown font-bold">
-      local_mall
-      </span>
-    </a>
-    <div v-if="cart.justAdded" class="absolute top-20 right-2 z-10 bg-white text-np-dark-brown border border-2 border-np-dark-brown w-2/3 md:w-80 shadow-xl p-4 -mt-4 rounded-md z-20">
-      <div @click="cart.justAdded = false;" class="absolute top-2 right-4 text-xl font-bold  rounded-full cursor-pointer">
-        x
-      </div>
-      <b>Just Added</b>
-      <div class="grid grid-cols-[20%_80%] gap-2 my-2">
-        <div>
-          <img class="shadow-xl block relative" :src="cart.latestItem.book?.volumeInfo.imageLinks.thumbnail">
-        </div>
-        <div>
-          <span class="font-bold block">{{cart.latestItem.book?.volumeInfo.title}}</span>
-          <span class="italic block">by {{cart.latestItem.book?.volumeInfo.authors.join(', ').trim(', ')}}</span>
-          {{capitalize(cart.latestItem.listing.type)}} ${{(cart.latestItem.listing.price_in_cents+1000)/100}}
-          <a href="/cart"> <Button class="text-sm ml-auto float-right bg-transparent text-black border-black border border-2 hover:bg-black hover:text-white mt-4 mr-4" :text="'Go to Cart'"></Button></a>
-        </div>
-
-      </div>
-
-    </div>
-  </header>
+  <AppHeader/>
   <router-view/>
-  <div class="footer-head w-full h-[100px] bg-np-dark-brown "></div>
-  <footer class="w-full p-4 bg-np-dark-brown text-np-yellow  sm:flex items-center -mb-2 z-10 relative block  shadow-lg">
-    <div class="sm:w-1/2 md:w-1/3 -mt-10">
-      <h3 class="font-bold uppercase text-2xl">Campfire Reads</h3>
-      <div class="text-np-yellow-200">
-        Campfire Reads provides a marketplace for a large amount of books shipped directly to your house.
-        <div class="text-xs my-4">
-          <b>Smoked Book</b> (sməʊkt bo͝ok): A book that has been imbued with the smell of campfire.  Instant nostalgia at your fingertips without leaving the hhouse.
+  <div class="footer-head w-full h-[100px] bg-np-dark-brown mt-20"></div>
+  <footer class="w-full p-4 bg-np-dark-brown ">
+    <div class="text-np-yellow  sm:flex items-center -mb-2 z-10 relative block  shadow-lg">
+      <div class="sm:w-1/2 md:w-1/3 -mt-10">
+        <h3 class="font-bold uppercase text-2xl">Campfire Reads</h3>
+        <div class="text-np-yellow-200">
+          Campfire Reads provides a marketplace for a large amount of books shipped directly to your house.
+          <div class="text-xs my-4">
+            <b>Smoked Book</b> (sməʊkt bo͝ok): A book that has been imbued with the smell of campfire. Instant nostalgia
+            at your fingertips without leaving the hhouse.
+          </div>
         </div>
       </div>
+
+      <div class="ml-auto sm:text-right">
+        <b>Links</b>
+        <a class="block" href="/about">About Us</a>
+        <a class="block" href="/contact">Contact</a>
+        <a class="block" href="/contact">Terms of Service</a>
+        <a class="block" href="/contact">Privacy Policy</a>
+
+      </div>
     </div>
-
-    <div class="ml-auto sm:text-right">
-      <b>Links</b>
-      <a class="block" href="/about">About Us</a>
-      <a class="block" href="/contact">Contact</a>
-      <a class="block" href="/contact">Terms of Service</a>
-      <a class="block" href="/contact">Privacy Policy</a>
-
+    <div class="text-center my-10 block">
+      <span class="material-symbols-outlined text-8xl font-light text-np-yellow opacity-30">
+      local_fire_department
+      </span>
     </div>
   </footer>
 </template>
 
 <style scoped lang="scss">
-  .footer-head{
-    transform: skewY(2deg);
-    margin-bottom: -40px;
+.footer-head {
+  transform: skewY(2deg);
+  margin-bottom: -40px;
 
-  }
+}
 
 </style>

@@ -13,7 +13,7 @@
             <div>
               {{capitalize(item.listing.type)}} ${{(item.listing.price_in_cents+1000)/100}}
             </div>
-            <Button  @click="removeFromCartAtIndex(index)" class="text-sm my-4 font-normal ml-auto block top-0 absolute right-0 py-1 px-1 border-2 hover:bg-red-200 border-red-200 text-np-dark-brown bg-transparent" :text="'Remove'"></Button>
+            <Button  @click="removeFromCartAtIndex(index)" class="text-sm my-4 font-normal ml-auto block top-0 absolute right-0 py-1 px-1 border-2  !hover:bg-red-200 border-red-200 text-np-dark-brown !bg-white" :text="'Remove'"></Button>
 
           </div>
 
@@ -33,7 +33,7 @@
 
       </div>
     </div>
-    <div v-if="cart.items.length == 0">
+    <div v-if="cart.items.length == 0" class="text-4xl my-10 ml-16">
       You have no items in your cart
     </div>
 

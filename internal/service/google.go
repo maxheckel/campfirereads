@@ -28,7 +28,8 @@ func NewGoogle(cfg *config.Config, cache cache.Cache) Google {
 }
 
 func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
-	cachedBook, err := g.cache.Read(isbn)
+	cacheKey := isbn
+	cachedBook, err := g.cache.Read(cacheKey)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,7 @@ func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
 			}
 			fmt.Printf("Backoff on ISBN %s, waiting %d seconds\n", isbn, sleep)
 			time.Sleep(time.Second * time.Duration(sleep))
-			return g.GetISBN(isbn, sleep+1)
+			return g.GetISBN(isbn, sleep+(sleep*2))
 		}
 
 		return nil, err
@@ -69,7 +70,7 @@ func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
 		return nil, err
 	}
 	b := &res.Items[0]
-	err = g.cache.Write(isbn, b, 24*60*60)
+	err = g.cache.Write(cacheKey, b, 24*60*60)
 	return b, err
 }
 
