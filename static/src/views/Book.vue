@@ -2,13 +2,13 @@
   <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8 mt-20 p-4">
     <div class="grid md:grid-cols-[30%_70%] gap-4">
       <div>
-        <img v-if="!data.loadingBook" :src="imageUrl()" class="shadow shadow-xlg w-1/2 relative mx-auto md:w-full">
+        <img v-if="!data.loadingBook" :src="imageUrl(data.book)" class="shadow shadow-xlg w-1/2 relative mx-auto md:w-full">
         <ShimmerBox v-else class="w-full h-[400px]"></ShimmerBox>
       </div>
       <div>
         <template v-if="!data.loadingBook">
           <h1 class="text-4xl font-bold">{{ data.book?.volumeInfo?.title }}</h1>
-          <b>By {{ data.book?.volumeInfo?.authors.join(',').trim(',') }}</b>
+          <b>By {{ data.book?.volumeInfo?.authors.join(', ').trim(', ') }}</b>
           <div v-if="data.loadingPrice">
             Loading price...
           </div>
@@ -67,7 +67,7 @@ import {onMounted, reactive} from "vue";
 import ShimmerBox from "../components/ShimmerBox.vue";
 import Button from "../components/Button.vue";
 import {cart, addToCart} from "../store/cart.js";
-import {capitalize} from "../services/utils.js";
+import {capitalize, imageUrl} from "../services/utils.js";
 
 const route = useRoute();
 const isbn = route.params.isbn
@@ -102,10 +102,6 @@ function isInCart(){
 }
 
 
-function imageUrl() {
-  return data.book.volumeInfo.imageLinks.thumbnail.replace("edge=curl", "")
-}
-
 function getListings() {
   return data.prices.filter((l) => l.price_in_cents > 0)
 }
@@ -131,7 +127,7 @@ function description() {
 
 onMounted(() => {
 
-  fetch(import.meta.env.VITE_API_HOST + "/isbn/" + isbn)
+  fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn)
       .then((response) => response.json())
       .then((resp) => {
         data.book = resp.book;
@@ -140,7 +136,7 @@ onMounted(() => {
           window.location.href = '/'
         }
       });
-  fetch(import.meta.env.VITE_API_HOST + "/isbn/" + isbn+'/price')
+  fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn+'/price')
       .then((response) => response.json())
       .then((resp) => {
         data.prices = resp.listings;

@@ -6,7 +6,12 @@
     </div>
     <div class="w-full text-center px-2 mt-4">
       <span class="font-bold block"> {{props.book.volumeInfo.title}}</span>
-      By: {{props.book.volumeInfo.authors.join(", ").trim(", ")}}
+      <span v-if="props.book.volumeInfo?.authors?.length > 0">
+        By: {{props.book?.volumeInfo?.authors?.join(", ").trim(", ")}}
+        </span>
+      <span v-if="extended" class="text-sm text-gray-500">
+        Publish date:  {{book.volumeInfo.publishedDate}}
+      </span>
     </div>
   </a>
 
@@ -15,11 +20,12 @@
 <script setup>
 import {bookHref} from "../services/utils.js";
 const props = defineProps({
-  book: Object
+  book: Object,
+  extended: Boolean
 })
 
 function imageUrl(){
-  return props.book?.volumeInfo.imageLinks.thumbnail.replace("edge=curl", "")
+  return props.book?.volumeInfo.imageLinks.thumbnail.replace("edge=curl", "").replace("http://", "https://")
 }
 
 </script>

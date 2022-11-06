@@ -31,7 +31,7 @@ import {reactive} from "vue";
 import Header from "../components/Header.vue";
 import Book from "../components/Book.vue";
 import ShimmerBox from "../components/ShimmerBox.vue";
-
+import {decimalHash} from "../services/utils.js";
 const route = useRoute();
 const category = route.params.category
 const data = reactive({
@@ -44,16 +44,6 @@ const displayName = () => {
   return data.list?.list?.display_name ? data.list?.list?.display_name : category.replace("-", " ")
 }
 
-const decimalHash = string => {
-  let sum = 0;
-  for (let i = 0; i < string.length; i++)
-    sum += (i + 1) * string.codePointAt(i) / (1 << 8)
-  let result = sum % 1;
-  if (result > 0.5) {
-    return result / 2
-  }
-  return result;
-}
 
 
 fetch(import.meta.env.VITE_API_HOST + "/category/" + category)

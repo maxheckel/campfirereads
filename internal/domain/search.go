@@ -7,7 +7,9 @@ type BookSearchResult struct {
 }
 
 type BookSearch struct {
-	Query string
+	Query   string
+	Offset  int
+	Backoff int
 }
 
 type Book struct {

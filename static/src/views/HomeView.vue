@@ -8,7 +8,7 @@ const data = reactive({
   loading: true
 })
 onMounted(() => {
-  fetch(import.meta.env.VITE_API_HOST + "/bestsellers")
+  fetch(import.meta.env.VITE_API_HOST + "bestsellers")
       .then((response) => response.json())
       .then((resp) => {
         data.bestSellerLists = resp.lists
@@ -52,7 +52,7 @@ onMounted(() => {
 
   <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 md:mt-16  px-4">
     <Search class="my-8"/>
-    <BookList title="Popular Titles" :endpoint="'/popular'"  :category-link="'/browse/popular'"></BookList>
+    <BookList title="Popular Titles" :endpoint="'popular'"  :category-link="'/browse/popular'"></BookList>
     <BookList v-if="!data.loading" class="my-20" v-for="list in data.bestSellerLists" :title="list.list.display_name" :books="list.books" :category-link="'/browse/'+list.list.list_name_encoded"></BookList>
     <div class="grid-cols-2 md:grid-cols-6 gap-10 grid mt-20" v-if="data.loading">
       <div  v-for="i in new Array(48)">

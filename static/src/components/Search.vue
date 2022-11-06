@@ -10,12 +10,13 @@
         </svg>
       </div>
       <input v-model="data.query" type="search" id="default-search"
-             class="block p-4 pl-10 w-full bg-g text-sm text-gray-900 rounded rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 d dark:border-gray-600 dark:placeholder-gray-400 dark:text-np-dark-brown dark:focus:ring-blue-500 dark:focus:border-blue-500"
+             @keyup.enter="search"
+             class="block p-4 pl-10 w-full bg-g text-sm text-gray-900 rounded-full border border-gray-300 focus:ring-blue-500 focus:border-blue-500 d dark:border-gray-600 dark:placeholder-gray-400 dark:text-np-dark-brown dark:focus:ring-blue-500 dark:focus:border-blue-500"
              :class="{'greenBG': greenBG}"
-             placeholder="Search for any book" required>
+             placeholder="Search for any book, category, genre, or subject!" required>
       <button @click="search" type="submit"
               :class="{'greenBG': greenBG}"
-              class="text-white absolute right-2.5 bottom-2.5 bg-np-green hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-np-green  dark:focus:ring-blue-800">
+              class="text-white absolute right-2.5 bottom-2.5 bg-np-green hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm px-4 py-2 dark:bg-np-green  dark:focus:ring-blue-800">
         Search
       </button>
     </div>
@@ -35,9 +36,7 @@ const data = reactive({
 })
 
 function search() {
-   router.push({name: 'search', query: data})
-  data.query = ''
-  header.showingMobileSearch = false;
+  window.location = '/search?query='+data.query;
 }
 </script>
 
