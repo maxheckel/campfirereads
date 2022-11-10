@@ -17,7 +17,7 @@ const (
 	AmazonListings
 )
 
-func NewMemcache(address string) Cache {
+func NewMemcache(address string) Service {
 	mc := memcache.New(address)
 	return &memcacheDriver{memcache: mc}
 }

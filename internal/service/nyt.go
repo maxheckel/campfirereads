@@ -17,10 +17,10 @@ type NYT interface {
 
 type nyt struct {
 	cfg   *config.Config
-	cache cache.Cache
+	cache cache.Service
 }
 
-func NewNYT(cfg *config.Config, cache cache.Cache) NYT {
+func NewNYT(cfg *config.Config, cache cache.Service) NYT {
 	return &nyt{cfg: cfg, cache: cache}
 }
 

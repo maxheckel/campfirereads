@@ -12,7 +12,7 @@ import (
 type appengineMemcache struct {
 }
 
-func NewAppEngineMemcache() Cache {
+func NewAppEngineMemcache() Service {
 	return &appengineMemcache{}
 }
 

@@ -3,9 +3,9 @@
     <Header class="ml-8" :text="'Your Cart'" :width-override="'w-10'" :icon-path="'/media/arrowhead.svg'"/>
     <div class="grid sm:grid-cols-[70%_30%] gap-8 p-4" v-if="cart.items.length > 0">
       <div>
-        <div v-for="(item, index) in cart.items" class="grid grid-cols-[20%_80%] my-4 border-b-1 border-b-gray-200 border-b py-4 border-box">
+        <div v-for="(item, index) in cart.items" class="grid md:grid-cols-[20%_80%] my-4 border-b-1 border-b-gray-200 border-b py-4 border-box">
           <a :href="bookHref(item.book)">
-            <img :src="item.book.volumeInfo.imageLinks.thumbnail" class="w-2/3 relative mx-auto ">
+            <img :src="imageUrl(item.book)" class="w-2/3 relative mx-auto ">
           </a>
           <div class="relative">
             <h2 class="text-2xl">{{item.book.volumeInfo.title}}</h2>
@@ -13,7 +13,7 @@
             <div>
               {{capitalize(item.listing.type)}} ${{(item.listing.price_in_cents+1000)/100}}
             </div>
-            <Button  @click="removeFromCartAtIndex(index)" class="text-sm my-4 font-normal ml-auto block top-0 absolute right-0 py-1 px-1 border-2  !hover:bg-red-200 border-red-200 text-np-dark-brown !bg-white" :text="'Remove'"></Button>
+            <Button  @click="removeFromCartAtIndex(index)" class="text-sm my-4 font-normal ml-auto block top-0 md:absolute right-0 py-1 px-1 border-2  !hover:bg-red-200 border-red-200 text-np-dark-brown !bg-white" :text="'Remove'"></Button>
 
           </div>
 
@@ -48,7 +48,7 @@ import {cart, removeFromCartAtIndex} from "../store/cart.js";
 import {capitalize} from "../services/utils.js";
 import Button from "../components/Button.vue";
 import CartLineItem from "../components/CartLineItem.vue";
-import {bookHref} from "../services/utils.js";
+import {bookHref, imageUrl} from "../services/utils.js";
 
 function subtotal(){
   let total = 0;

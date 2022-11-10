@@ -1,8 +1,9 @@
 <template>
   <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-8 pt-8 mt-20 p-4">
-    <div class="grid md:grid-cols-[30%_70%] gap-4">
+    <div class="grid md:grid-cols-[30%_70%] gap-16">
       <div>
-        <img v-if="!data.loadingBook" :src="imageUrl(data.book)" class="shadow shadow-xlg w-1/2 relative mx-auto md:w-full">
+        <img v-if="!data.loadingBook" :src="imageUrl(data.book)"
+             class="shadow shadow-xlg w-1/2 relative mx-auto md:w-full">
         <ShimmerBox v-else class="w-full h-[400px]"></ShimmerBox>
       </div>
       <div>
@@ -47,8 +48,10 @@
 
             </router-link>
           </div>
-          <Button v-if="!data.loadingPrice" @click="formatAndAddToCart()" class="my-4 block" :text="'Add to Cart'"></Button>
-          <Button v-if="data.loadingPrice" class="bg-gray-200 text-gray-400 my-4 block" :text="'Loading Price'"></Button>
+          <Button v-if="!data.loadingPrice" @click="formatAndAddToCart()" class="my-4 block"
+                  :text="'Add to Cart'"></Button>
+          <Button v-if="data.loadingPrice" class="bg-gray-200 text-gray-400 my-4 block"
+                  :text="'Loading Price'"></Button>
         </template>
         <template v-else>
           <shimmer-box class="w-40 h-8 rounded rounded-full"/>
@@ -66,7 +69,7 @@ import {useRoute} from 'vue-router';
 import {onMounted, reactive} from "vue";
 import ShimmerBox from "../components/ShimmerBox.vue";
 import Button from "../components/Button.vue";
-import {cart, addToCart} from "../store/cart.js";
+import {addToCart, cart} from "../store/cart.js";
 import {capitalize, imageUrl} from "../services/utils.js";
 
 const route = useRoute();
@@ -83,18 +86,24 @@ const data = reactive({
 })
 
 function formatAndAddToCart() {
+  let listing = getListings()[data.selectedListing];
+  if (listing === undefined) {
+    listing = getListings()[0]
+  }
   addToCart({
     book: data.book,
-    listing: data.prices[data.selectedListing]
+    listing: listing
   })
+
+
   document.body.scrollTop = document.documentElement.scrollTop = 0;
 
 }
 
-function isInCart(){
+function isInCart() {
 
-  for(let x = 0; x < cart.items.length; x++){
-    if (cart.items[x].book.id === data.book.id){
+  for (let x = 0; x < cart.items.length; x++) {
+    if (cart.items[x].book.id === data.book.id) {
       return true
     }
   }
@@ -136,7 +145,7 @@ onMounted(() => {
           window.location.href = '/'
         }
       });
-  fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn+'/price')
+  fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn + '/price')
       .then((response) => response.json())
       .then((resp) => {
         data.prices = resp.listings;

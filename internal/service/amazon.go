@@ -22,10 +22,10 @@ type Amazon interface {
 
 type amazon struct {
 	bookLinksText []string
-	cache         cache.Cache
+	cache         cache.Service
 }
 
-func NewAmazon(cache cache.Cache) Amazon {
+func NewAmazon(cache cache.Service) Amazon {
 	return &amazon{
 		cache: cache,
 		bookLinksText: []string{
@@ -58,14 +58,11 @@ func (a amazon) ListingToPriceInCents(listing *domain.AmazonListing) error {
 	var cents int
 	doc.Find("*[data-a-color|=\"price\"]").Each(func(i int, selection *goquery.Selection) {
 		prices := strings.Split(selection.Text(), "$")
-		if len(prices) == 1 {
-
-		}
 		for _, price := range prices {
 			if price == "" || strings.Count(price, ".") > 1 {
 				continue
 			}
-			cents, err = strconv.Atoi(strings.ReplaceAll(price, ".", ""))
+			cents, err = strconv.Atoi(strings.ReplaceAll(strings.ReplaceAll(price, ".", ""), ",", ""))
 			if cents > currentListPrice {
 				currentListPrice = cents
 			}
@@ -78,7 +75,7 @@ func (a amazon) ListingToPriceInCents(listing *domain.AmazonListing) error {
 				if price == "" || strings.Count(price, ".") > 1 {
 					continue
 				}
-				cents, err = strconv.Atoi(strings.ReplaceAll(price, ".", ""))
+				cents, err = strconv.Atoi(strings.ReplaceAll(strings.ReplaceAll(price, ".", ""), ",", ""))
 				if cents > currentListPrice {
 					currentListPrice = cents
 				}
@@ -158,7 +155,7 @@ func (a amazon) ISBNToPrices(ISBN string) ([]*domain.AmazonListing, error) {
 	for index := range res {
 		wg.Add(1)
 		go func(index int) {
-			err := a.ListingToPriceInCents(res[index])
+			err = a.ListingToPriceInCents(res[index])
 			if err != nil {
 				panic(err)
 			}

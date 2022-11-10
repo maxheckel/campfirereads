@@ -20,10 +20,10 @@ type Google interface {
 
 type google struct {
 	config *config.Config
-	cache  cache.Cache
+	cache  cache.Service
 }
 
-func NewGoogle(cfg *config.Config, cache cache.Cache) Google {
+func NewGoogle(cfg *config.Config, cache cache.Service) Google {
 	return &google{config: cfg, cache: cache}
 }
 

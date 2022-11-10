@@ -12,6 +12,7 @@ require (
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
+	github.com/stripe/stripe-go/v73 v73.16.0 // indirect
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
 	google.golang.org/appengine/v2 v2.0.2
 	google.golang.org/protobuf v1.28.1 // indirect

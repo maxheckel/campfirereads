@@ -5,6 +5,7 @@ import (
 	"github.com/maxheckel/campfirereads/internal/handler"
 	"github.com/maxheckel/campfirereads/internal/service"
 	"github.com/maxheckel/campfirereads/internal/service/cache"
+	"github.com/maxheckel/campfirereads/internal/service/payments"
 )
 
 func NewAPI() (*App, error) {
@@ -12,7 +13,7 @@ func NewAPI() (*App, error) {
 	if err != nil {
 		panic(err)
 	}
-	var cacheService cache.Cache
+	var cacheService cache.Service
 	switch srv.Config.CacheDriver {
 	case "memory":
 		cacheService = &cache.Memory{}
@@ -25,7 +26,7 @@ func NewAPI() (*App, error) {
 
 	}
 
-	h := handler.NewAPI(service.NewGoogle(srv.Config, cacheService), service.NewAmazon(cacheService), service.NewNYT(srv.Config, cacheService), cacheService)
+	h := handler.NewAPI(service.NewGoogle(srv.Config, cacheService), service.NewAmazon(cacheService), service.NewNYT(srv.Config, cacheService), cacheService, payments.Stripe(srv.Config))
 	srv.Gin.Use(CORSMiddleware())
 	srv.Gin.GET("/search", h.Search)
 	srv.Gin.GET("/isbn/:isbn", h.ISBN)
@@ -44,7 +45,7 @@ func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Service-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
 
 		if c.Request.Method == "OPTIONS" {
