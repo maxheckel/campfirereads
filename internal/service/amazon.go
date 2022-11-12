@@ -85,7 +85,7 @@ func (a amazon) ListingToPriceInCents(listing *domain.AmazonListing) error {
 	if currentListPrice == 0 {
 		currentListPrice = -1
 	}
-	listing.PriceInCents = int32(currentListPrice)
+	listing.PriceInCents = int64(currentListPrice)
 	return err
 }
 

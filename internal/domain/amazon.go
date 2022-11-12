@@ -13,6 +13,6 @@ type AmazonListing struct {
 	URL          *url.URL `json:"url"`
 	ISBN         string   `json:"isbn"`
 	Type         string   `json:"type"`
-	PriceInCents int32    `json:"price_in_cents"`
+	PriceInCents int64    `json:"price_in_cents"`
 	CrawlDate    time.Time
 }

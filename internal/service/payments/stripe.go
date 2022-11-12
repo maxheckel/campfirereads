@@ -10,8 +10,10 @@ import (
 	"github.com/stripe/stripe-go/v73/checkout/session"
 	"github.com/stripe/stripe-go/v73/price"
 	"github.com/stripe/stripe-go/v73/product"
+	"net/url"
 	"strings"
 	"sync"
+	"time"
 )
 
 type stripeService struct {
@@ -23,6 +25,7 @@ type stripeService struct {
 
 const isbnKey = "isbn"
 const amazonURLKey = "amazon_url"
+const listingTypeKey = "listing_type"
 
 func Stripe(cfg *config.Config, amazon service.Amazon) Service {
 	stripe.Key = cfg.StripePrivateAPIKey
@@ -56,7 +59,7 @@ func (s *stripeService) GetCheckoutURL(books []*domain.BookWithListing) (string,
 				errs[i] = err
 				return
 			}
-			stripePrice, err := s.createPrice(stripeProduct, b.Listing)
+			stripePrice, err := s.createOrRetrievePrice(stripeProduct, b.Listing)
 			if err != nil {
 				errs[i] = err
 				return
@@ -74,7 +77,7 @@ func (s *stripeService) GetCheckoutURL(books []*domain.BookWithListing) (string,
 		}
 	}
 	params := &stripe.CheckoutSessionParams{
-		SuccessURL:         stripe.String(fmt.Sprintf("%s/checkout/success", s.frontendURL)),
+		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}", s.frontendURL)),
 		CancelURL:          stripe.String(fmt.Sprintf("%s/cart", s.frontendURL)),
 		LineItems:          lineItems,
 		Mode:               stripe.String(string(stripe.CheckoutSessionModePayment)),
@@ -111,10 +114,10 @@ func (s *stripeService) GetCheckoutURL(books []*domain.BookWithListing) (string,
 	return stripeSession.URL, nil
 }
 
-func (s *stripeService) createPrice(product *stripe.Product, listing *domain.AmazonListing) (*stripe.Price, error) {
+func (s *stripeService) createOrRetrievePrice(product *stripe.Product, listing *domain.AmazonListing) (*stripe.Price, error) {
 	unitAmount := stripe.Int64(int64(listing.PriceInCents + 1000))
 	query := &stripe.PriceSearchParams{}
-	query.Query = *stripe.String(fmt.Sprintf("product:'%s'", product.ID))
+	query.Query = *stripe.String(fmt.Sprintf("product:'%s' AND metadata['%s']:'%s'", product.ID, listingTypeKey, listing.Type))
 	iter := price.Search(query)
 	for iter.Next() {
 		if iter.Price().UnitAmount == *unitAmount {
@@ -127,7 +130,69 @@ func (s *stripeService) createPrice(product *stripe.Product, listing *domain.Ama
 		Currency:   stripe.String(string(stripe.CurrencyUSD)),
 		UnitAmount: unitAmount,
 	}
+	params.AddMetadata(listingTypeKey, listing.Type)
 	return price.New(params)
+}
+
+func (s *stripeService) GetReceipt(id string) (*domain.Receipt, error) {
+	receipt := &domain.Receipt{}
+	sessionParams := stripe.CheckoutSessionParams{}
+	sessionParams.AddExpand("customer")
+	stripeSession, err := session.Get(id, &sessionParams)
+	if err != nil {
+		return nil, err
+	}
+
+	receipt.OrderedOn = time.Unix(stripeSession.Created, 0)
+
+	receipt.Customer = domain.Customer{
+		Name:        stripeSession.CustomerDetails.Name,
+		PhoneNumber: stripeSession.CustomerDetails.Phone,
+		Email:       stripeSession.CustomerDetails.Email,
+	}
+
+	receipt.Shipping = domain.Address{
+		Street1: stripeSession.ShippingDetails.Address.Line1,
+		Street2: stripeSession.ShippingDetails.Address.Line2,
+		City:    stripeSession.ShippingDetails.Address.City,
+		State:   stripeSession.ShippingDetails.Address.State,
+		Zip:     stripeSession.ShippingDetails.Address.PostalCode,
+	}
+	params := &stripe.CheckoutSessionListLineItemsParams{}
+	params.Session = stripe.String(id)
+	params.AddExpand("data.price.product")
+	i := session.ListLineItems(params)
+	for i.Next() {
+		li := i.LineItem()
+		amazonURL, err := url.Parse(fmt.Sprintf("https://amazon.com%s", li.Price.Product.Metadata[amazonURLKey]))
+		if err != nil {
+			return nil, err
+		}
+		if li != nil {
+			receipt.Books = append(receipt.Books, domain.BookWithListing{
+				Book: &domain.Book{
+					VolumeInfo: &domain.VolumeInfo{
+						Title:       li.Price.Product.Name,
+						Description: li.Price.Product.Description,
+						ImageLinks:  &domain.Images{SmallThumbnail: li.Price.Product.Images[0], Thumbnail: li.Price.Product.Images[0]},
+						IndustryIdentifiers: []domain.Identifier{
+							{
+								Type:       "ISBN_13",
+								Identifier: li.Price.Product.Metadata[isbnKey],
+							},
+						},
+					},
+				},
+				Listing: &domain.AmazonListing{
+					PriceInCents: li.Price.UnitAmount,
+					URL:          amazonURL,
+					Type:         li.Price.Metadata[listingTypeKey],
+					ISBN:         li.Price.Product.Metadata[isbnKey],
+				},
+			})
+		}
+	}
+	return receipt, nil
 }
 
 func (s *stripeService) latestListingPrice(err error, b *domain.BookWithListing) error {
@@ -162,7 +227,10 @@ func (s *stripeService) productForBook(book *domain.BookWithListing) (*stripe.Pr
 	}
 	description := book.Book.VolumeInfo.Description
 	words := strings.Split(description, " ")
-	description = strings.Join(words[0:25], " ") + "..."
+	if len(words) > 25 {
+		description = strings.Join(words[0:25], " ") + "..."
+	}
+
 	createReq := &stripe.ProductParams{}
 	createReq.Name = &book.Book.VolumeInfo.Title
 	createReq.Images = append(createReq.Images, &book.Book.VolumeInfo.ImageLinks.Thumbnail)

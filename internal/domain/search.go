@@ -51,18 +51,25 @@ func (b *Book) ISBN() string {
 	return ""
 }
 
+type Images struct {
+	SmallThumbnail string `json:"smallThumbnail"`
+	Thumbnail      string `json:"thumbnail"`
+}
+
+type Identifier struct {
+	Type       string `json:"type"`
+	Identifier string `json:"identifier"`
+}
+
 type VolumeInfo struct {
-	Title               string   `json:"title"`
-	Subtitle            string   `json:"subtitle,omitempty"`
-	Authors             []string `json:"authors"`
-	Publisher           string   `json:"publisher,omitempty"`
-	PublishedDate       string   `json:"publishedDate"`
-	Description         string   `json:"description"`
-	IndustryIdentifiers []struct {
-		Type       string `json:"type"`
-		Identifier string `json:"identifier"`
-	} `json:"industryIdentifiers"`
-	ReadingModes struct {
+	Title               string       `json:"title"`
+	Subtitle            string       `json:"subtitle,omitempty"`
+	Authors             []string     `json:"authors"`
+	Publisher           string       `json:"publisher,omitempty"`
+	PublishedDate       string       `json:"publishedDate"`
+	Description         string       `json:"description"`
+	IndustryIdentifiers []Identifier `json:"industryIdentifiers"`
+	ReadingModes        struct {
 		Text  bool `json:"text"`
 		Image bool `json:"image"`
 	} `json:"readingModes"`
@@ -78,14 +85,11 @@ type VolumeInfo struct {
 		ContainsEpubBubbles  bool `json:"containsEpubBubbles"`
 		ContainsImageBubbles bool `json:"containsImageBubbles"`
 	} `json:"panelizationSummary,omitempty"`
-	ImageLinks struct {
-		SmallThumbnail string `json:"smallThumbnail"`
-		Thumbnail      string `json:"thumbnail"`
-	} `json:"imageLinks"`
-	Language            string `json:"language"`
-	PreviewLink         string `json:"previewLink"`
-	InfoLink            string `json:"infoLink"`
-	CanonicalVolumeLink string `json:"canonicalVolumeLink"`
+	ImageLinks          *Images `json:"imageLinks"`
+	Language            string  `json:"language"`
+	PreviewLink         string  `json:"previewLink"`
+	InfoLink            string  `json:"infoLink"`
+	CanonicalVolumeLink string  `json:"canonicalVolumeLink"`
 }
 
 type SaleInfo struct {
