@@ -3,24 +3,27 @@
     <Header class="ml-8" :text="'Your Cart'" :width-override="'w-10'" :icon-path="'/media/arrowhead.svg'"/>
     <div class="grid sm:grid-cols-[70%_30%] gap-8 p-4" v-if="cart.items.length > 0">
       <div>
-        <div v-for="(item, index) in cart.items" class="grid md:grid-cols-[20%_80%] my-4 border-b-1 border-b-gray-200 border-b py-4 border-box">
+        <div v-for="(item, index) in cart.items"
+             class="grid md:grid-cols-[20%_80%] my-4 border-b-1 border-b-gray-200 border-b py-4 border-box">
           <a :href="bookHref(item.book)">
             <img :src="imageUrl(item.book)" class="w-2/3 relative mx-auto ">
           </a>
           <div class="relative">
-            <h2 class="text-2xl">{{item.book.volumeInfo.title}}</h2>
-            <div class="italic">By {{item.book.volumeInfo.authors.join(', ').trim(', ')}}</div>
+            <h2 class="text-2xl">{{ item.book.volumeInfo.title }}</h2>
+            <div class="italic">By {{ item.book.volumeInfo.authors.join(', ').trim(', ') }}</div>
             <div>
-              {{capitalize(item.listing.type)}} ${{(item.listing.price_in_cents+1000)/100}}
+              {{ capitalize(item.listing.type) }} ${{ (item.listing.price_in_cents + 1000) / 100 }}
             </div>
-            <Button  @click="removeFromCartAtIndex(index)" class="text-sm my-4 font-normal ml-auto block top-0 md:absolute right-0 py-1 px-1 border-2  !hover:bg-red-200 border-red-200 text-np-dark-brown !bg-white" :text="'Remove'"></Button>
+            <Button @click="removeFromCartAtIndex(index)"
+                    class="text-sm my-4 font-normal ml-auto block top-0 md:absolute right-0 py-1 px-1 border-2  !hover:bg-red-200 border-red-200 text-np-dark-brown !bg-white"
+                    :text="'Remove'"></Button>
 
           </div>
 
         </div>
       </div>
 
-      <div >
+      <div>
         <div class="border border-gray-500 rounded-md h-auto p-4">
           <b class="text-lg">Summary</b>
 
@@ -28,7 +31,9 @@
           <CartLineItem :value="'$'+(subtotal()/100)" :label="'Subtotal'"></CartLineItem>
           <CartLineItem :value="'$'+(smoke())" :label="'Smoke'"></CartLineItem>
           <CartLineItem :value="'$'+(total()/100)" :label="'Total'"></CartLineItem>
-          <Button class="w-full text-center mt-10" :text="'Proceed to Checkout'"></Button>
+          <Button @click="goToCheckout()" v-if="!data.loadingCart" class="w-full text-center mt-10"
+                  :text="'Proceed to Checkout'"></Button>
+          <Loading class="relative mx-auto" v-if="data.loadingCart"></Loading>
         </div>
 
       </div>
@@ -45,26 +50,57 @@
 
 import Header from "../components/Header.vue";
 import {cart, removeFromCartAtIndex} from "../store/cart.js";
-import {capitalize} from "../services/utils.js";
+import {bookHref, capitalize, imageUrl} from "../services/utils.js";
 import Button from "../components/Button.vue";
 import CartLineItem from "../components/CartLineItem.vue";
-import {bookHref, imageUrl} from "../services/utils.js";
+import {reactive} from "vue";
+import Loading from "../components/icons/Loading.vue";
 
-function subtotal(){
+const data = reactive({
+  loadingCart: false
+})
+
+function goToCheckout() {
+  data.loadingCart = true
+  fetch(import.meta.env.VITE_API_HOST + "checkout", {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json'
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    body: JSON.stringify(cart.items) // body data type must match "Content-Type" header
+  })
+      .then((response) => response.json())
+      .then((resp) => {
+        if (resp.url){
+          window.location = resp.url
+          return
+        }
+        data.loadingCart = false
+        alert("Something went wrong, please try again later")
+      })
+      .catch((err) => {
+        alert(err)
+        data.loadingCart = false
+      });
+}
+
+function subtotal() {
   let total = 0;
-  for(let x = 0; x < cart.items.length; x++){
+  for (let x = 0; x < cart.items.length; x++) {
     total += cart.items[x].listing.price_in_cents;
   }
   return total;
 }
 
-function smoke(){
+function smoke() {
   return cart.items.length * 10;
 }
 
-function total(){
+function total() {
   let total = 0;
-  for(let x = 0; x < cart.items.length; x++){
+  for (let x = 0; x < cart.items.length; x++) {
     total += cart.items[x].listing.price_in_cents + 1000;
   }
   return total;

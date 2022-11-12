@@ -10,6 +10,7 @@ type Config struct {
 	NYTAPIKey           string `envconfig:"NYT_API_KEY" required:"true"`
 	CacheDriver         string `envconfig:"CACHE_DRIVER" required:"true"`
 	CacheAddress        string `envconfig:"CACHE_ADDRESS"`
+	FrontendHost        string `envconfig:"FRONTEND_HOST" default:"http://localhost:4200"`
 }
 
 func Load(prefix string) (*Config, error) {

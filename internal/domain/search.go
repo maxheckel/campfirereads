@@ -42,6 +42,15 @@ type Book struct {
 	} `json:"searchInfo"`
 }
 
+func (b *Book) ISBN() string {
+	for _, i := range b.VolumeInfo.IndustryIdentifiers {
+		if i.Type == "ISBN_13" {
+			return i.Identifier
+		}
+	}
+	return ""
+}
+
 type VolumeInfo struct {
 	Title               string   `json:"title"`
 	Subtitle            string   `json:"subtitle,omitempty"`

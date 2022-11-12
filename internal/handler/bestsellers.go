@@ -82,11 +82,11 @@ func (a *APIHandler) GetBestSellers(c *gin.Context) {
 		if book.VolumeInfo == nil {
 			continue
 		}
-		for _, isbn := range book.VolumeInfo.IndustryIdentifiers {
-			if isbn.Type == "ISBN_13" {
-				isbnToBook[isbn.Identifier] = book
-			}
+		if book.ISBN() == "" {
+			continue
 		}
+		isbnToBook[book.ISBN()] = book
+
 	}
 
 	res := BestSellerResponse{}

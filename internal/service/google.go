@@ -113,13 +113,7 @@ func (g google) GetBooks(search domain.BookSearch) (*domain.BookSearchResult, er
 		return nil, err
 	}
 	for _, book := range res.Items {
-		ISBN := ""
-		for _, identifier := range book.VolumeInfo.IndustryIdentifiers {
-			if identifier.Type == "ISBN_13" {
-				ISBN = identifier.Identifier
-				break
-			}
-		}
+		ISBN := book.ISBN()
 		if ISBN == "" {
 			continue
 		}

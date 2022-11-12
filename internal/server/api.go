@@ -25,8 +25,9 @@ func NewAPI() (*App, error) {
 		cacheService = &cache.Memory{}
 
 	}
-
-	h := handler.NewAPI(service.NewGoogle(srv.Config, cacheService), service.NewAmazon(cacheService), service.NewNYT(srv.Config, cacheService), cacheService, payments.Stripe(srv.Config))
+	amazon := service.NewAmazon(cacheService)
+	merchant := payments.Stripe(srv.Config, amazon)
+	h := handler.NewAPI(service.NewGoogle(srv.Config, cacheService), amazon, service.NewNYT(srv.Config, cacheService), cacheService, merchant)
 	srv.Gin.Use(CORSMiddleware())
 	srv.Gin.GET("/search", h.Search)
 	srv.Gin.GET("/isbn/:isbn", h.ISBN)
@@ -34,6 +35,7 @@ func NewAPI() (*App, error) {
 	srv.Gin.GET("/category/:category", h.Category)
 	srv.Gin.GET("/bestsellers", h.GetBestSellers)
 	srv.Gin.GET("/popular", h.Popular)
+	srv.Gin.POST("/checkout", h.GetCheckoutURL)
 	// Healthcheck
 	srv.Gin.GET("/", func(context *gin.Context) {
 		context.Writer.Write([]byte("OK"))
