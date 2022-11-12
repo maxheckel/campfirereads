@@ -192,6 +192,13 @@ func (s *stripeService) GetReceipt(id string) (*domain.Receipt, error) {
 			})
 		}
 	}
+	if stripeSession.Status != stripe.CheckoutSessionStatusExpired {
+		_, err = session.Expire(id, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return receipt, nil
 }
 

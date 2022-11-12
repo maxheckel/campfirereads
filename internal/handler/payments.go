@@ -43,6 +43,7 @@ func (a *APIHandler) GetCheckoutURL(c *gin.Context) {
 
 func (a *APIHandler) Receipt(c *gin.Context) {
 	id := c.Param("id")
+
 	if id == "" {
 		c.JSON(500, gin.H{"error": errors.New("missing url parameter ID")})
 	}
