@@ -27,7 +27,7 @@
         <div class="border border-gray-500 rounded-md h-auto p-4">
           <b class="text-lg">Summary</b>
 
-          <CartLineItem :value="cart.items.length" :label="'Items'"></CartLineItem>
+          <CartLineItem :value="''+cart.items.length" :label="'Items'"></CartLineItem>
           <CartLineItem :value="'$'+(subtotal()/100)" :label="'Subtotal'"></CartLineItem>
           <CartLineItem :value="'$'+(smoke())" :label="'Smoke'"></CartLineItem>
           <CartLineItem :value="'$'+(total()/100)" :label="'Total'"></CartLineItem>
@@ -49,7 +49,7 @@
 <script setup>
 
 import Header from "../components/Header.vue";
-import {cart, removeFromCartAtIndex} from "../store/cart.js";
+import {cart, removeFromCartAtIndex, updatePrice} from "../store/cart.js";
 import {bookHref, capitalize, imageUrl} from "../services/utils.js";
 import Button from "../components/Button.vue";
 import CartLineItem from "../components/CartLineItem.vue";
@@ -57,11 +57,12 @@ import {reactive} from "vue";
 import Loading from "../components/icons/Loading.vue";
 
 const data = reactive({
-  loadingCart: false
+  loadingCheckout: false,
+  loadingPrices: false
 })
 
 function goToCheckout() {
-  data.loadingCart = true
+  data.loadingCheckout = true
   fetch(import.meta.env.VITE_API_HOST + "checkout", {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
     headers: {
@@ -77,12 +78,18 @@ function goToCheckout() {
           window.location = resp.url
           return
         }
-        data.loadingCart = false
+        if (resp.type === "price_mismatch"){
+          updatePrice(resp.data.isbn, resp.data.listingType, resp.data.actualPrice)
+          alert(resp.error)
+          data.loadingCheckout = false
+          return
+        }
+        data.loadingCheckout = false
         alert("Something went wrong, please try again later")
       })
       .catch((err) => {
         alert(err)
-        data.loadingCart = false
+        data.loadingCheckout = false
       });
 }
 

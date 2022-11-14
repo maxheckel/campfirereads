@@ -26,6 +26,52 @@ export function removeFromCartAtIndex(index){
 }
 
 
+export function removeISBNWithListingType(isbn, type){
+    for(let i = 0; i < cart.items.length; i++){
+        if (cart.items[i].listing.type !== listingType){
+            continue
+        }
+        let found = false
+        // TODO: Gross
+        for(let v = 0; v < cart.items[i].book.volumeInfo.industryIdentifiers.length; v++){
+            if (cart.items[i].book.volumeInfo.industryIdentifiers[v].type === "ISBN_13" && cart.items[i].book.volumeInfo.industryIdentifiers[v].identifier === isbn){
+                found = true
+                break;
+            }
+        }
+        if(!found){
+            continue
+        }
+
+        cart.items.splice(i, 1)
+    }
+    localStorage.setItem(cartKey, JSON.stringify(cart))
+}
+
+export function updatePrice(isbn, listingType, newPrice){
+    for(let i = 0; i < cart.items.length; i++){
+        if (cart.items[i].listing.type !== listingType){
+            continue
+        }
+        let found = false
+        // TODO: Gross
+        for(let v = 0; v < cart.items[i].book.volumeInfo.industryIdentifiers.length; v++){
+            if (cart.items[i].book.volumeInfo.industryIdentifiers[v].type === "ISBN_13" && cart.items[i].book.volumeInfo.industryIdentifiers[v].identifier === isbn){
+                found = true
+                break;
+            }
+        }
+        if(!found){
+            continue
+        }
+        alert('here')
+        alert(cart.items[i].listing.price_in_cents)
+        cart.items[i].listing.price_in_cents = newPrice
+        alert(cart.items[i].listing.price_in_cents)
+    }
+    localStorage.setItem(cartKey, JSON.stringify(cart))
+}
+
 
 export function loadFromLS(){
     if(!localStorage.getItem(cartKey)){

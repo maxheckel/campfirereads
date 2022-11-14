@@ -1,7 +1,6 @@
 package payments
 
 import (
-	"errors"
 	"fmt"
 	"github.com/maxheckel/campfirereads/internal/config"
 	"github.com/maxheckel/campfirereads/internal/domain"
@@ -23,7 +22,7 @@ type stripeService struct {
 	amazon      service.Amazon
 }
 
-const isbnKey = "isbn"
+const isbnKey = "ISBN"
 const amazonURLKey = "amazon_url"
 const listingTypeKey = "listing_type"
 
@@ -192,12 +191,6 @@ func (s *stripeService) GetReceipt(id string) (*domain.Receipt, error) {
 			})
 		}
 	}
-	if stripeSession.Status != stripe.CheckoutSessionStatusExpired {
-		_, err = session.Expire(id, nil)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	return receipt, nil
 }
@@ -211,13 +204,24 @@ func (s *stripeService) latestListingPrice(err error, b *domain.BookWithListing)
 	found := false
 	for _, l := range listings {
 		if l.URL.Path == b.Listing.URL.Path && l.Type == b.Listing.Type {
+			if b.Listing.PriceInCents != l.PriceInCents && l.PriceInCents > 0 {
+				return &PriceMismatchErr{
+					ISBN:               b.Book.ISBN(),
+					ActualPriceInCents: l.PriceInCents,
+					Name:               b.Book.VolumeInfo.Title,
+					ListingType:        b.Listing.Type,
+				}
+			}
+			if l.PriceInCents <= 0 {
+				return &OutOfStockErr{ISBN: b.Book.ISBN(), Name: b.Book.VolumeInfo.Title, ListingType: b.Listing.Type}
+			}
 			found = true
 			b.Listing = l
 			break
 		}
 	}
 	if !found {
-		return errors.New("could not find exact listing for book")
+		return &OutOfStockErr{ISBN: b.Book.ISBN(), Name: b.Book.VolumeInfo.Title, ListingType: b.Listing.Type}
 	}
 	if b.Listing.PriceInCents <= 0 {
 		return fmt.Errorf("no price found for ISBN %s", b.Book.ISBN())

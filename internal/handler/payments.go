@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/maxheckel/campfirereads/internal/domain"
+	"github.com/maxheckel/campfirereads/internal/service/payments"
 	"io"
 )
 
@@ -35,6 +36,34 @@ func (a *APIHandler) GetCheckoutURL(c *gin.Context) {
 	}
 	url, err := a.payments.GetCheckoutURL(booksWithListings)
 	if err != nil {
+		var priceMismatchErr *payments.PriceMismatchErr
+		if errors.As(err, &priceMismatchErr) {
+			c.JSON(400, gin.H{
+				"type":  "price_mismatch",
+				"error": err.Error(),
+				"data": map[string]interface{}{
+					"isbn":        priceMismatchErr.ISBN,
+					"listingType": priceMismatchErr.ListingType,
+					"actualPrice": priceMismatchErr.ActualPriceInCents,
+				},
+			})
+			return
+		}
+
+		var outOfStockErr *payments.OutOfStockErr
+		if errors.As(err, &outOfStockErr) {
+			c.JSON(400, gin.H{
+				"type":  "out_of_stock",
+				"error": err.Error(),
+				"data": map[string]interface{}{
+					"isbn":        outOfStockErr.ISBN,
+					"listingType": priceMismatchErr.ListingType,
+				},
+			})
+			return
+		}
+
+		// Default error
 		c.JSON(500, gin.H{"error": err})
 		return
 	}

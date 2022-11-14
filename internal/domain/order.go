@@ -8,10 +8,10 @@ type BookWithListing struct {
 }
 
 type Receipt struct {
-	OrderedOn time.Time
+	OrderedOn time.Time         `json:"orderedOn"`
 	Books     []BookWithListing `json:"books"`
 	Shipping  Address           `json:"shipping"`
-	Customer  Customer
+	Customer  Customer          `json:"customer"`
 }
 
 type Customer struct {

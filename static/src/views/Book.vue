@@ -91,6 +91,7 @@ function formatAndAddToCart() {
     listing = getListings()[0]
   }
   addToCart({
+    addedOn: new Date(),
     book: data.book,
     listing: listing
   })
