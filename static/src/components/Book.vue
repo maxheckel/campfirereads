@@ -25,7 +25,7 @@ const props = defineProps({
 })
 
 function imageUrl(){
-  return props.book?.volumeInfo.imageLinks.thumbnail.replace("edge=curl", "").replace("http://", "https://")
+  return props.book?.volumeInfo?.imageLinks?.thumbnail.replace("edge=curl", "").replace("http://", "https://")
 }
 
 </script>

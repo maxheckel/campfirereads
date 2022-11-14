@@ -57,7 +57,7 @@ func (a *APIHandler) GetCheckoutURL(c *gin.Context) {
 				"error": err.Error(),
 				"data": map[string]interface{}{
 					"isbn":        outOfStockErr.ISBN,
-					"listingType": priceMismatchErr.ListingType,
+					"listingType": outOfStockErr.ListingType,
 				},
 			})
 			return

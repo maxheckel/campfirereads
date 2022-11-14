@@ -76,7 +76,7 @@ func (s *stripeService) GetCheckoutURL(books []*domain.BookWithListing) (string,
 		}
 	}
 	params := &stripe.CheckoutSessionParams{
-		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}", s.frontendURL)),
+		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}?clearCart=1", s.frontendURL)),
 		CancelURL:          stripe.String(fmt.Sprintf("%s/cart", s.frontendURL)),
 		LineItems:          lineItems,
 		Mode:               stripe.String(string(stripe.CheckoutSessionModePayment)),

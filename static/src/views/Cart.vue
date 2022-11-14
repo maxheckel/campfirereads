@@ -31,9 +31,9 @@
           <CartLineItem :value="'$'+(subtotal()/100)" :label="'Subtotal'"></CartLineItem>
           <CartLineItem :value="'$'+(smoke())" :label="'Smoke'"></CartLineItem>
           <CartLineItem :value="'$'+(total()/100)" :label="'Total'"></CartLineItem>
-          <Button @click="goToCheckout()" v-if="!data.loadingCart" class="w-full text-center mt-10"
+          <Button @click="goToCheckout()" v-if="!data.loadingCheckout" class="w-full text-center mt-10"
                   :text="'Proceed to Checkout'"></Button>
-          <Loading class="relative mx-auto" v-if="data.loadingCart"></Loading>
+          <Loading class="relative mx-auto" v-if="data.loadingCheckout"></Loading>
         </div>
 
       </div>
@@ -49,7 +49,7 @@
 <script setup>
 
 import Header from "../components/Header.vue";
-import {cart, removeFromCartAtIndex, updatePrice} from "../store/cart.js";
+import {cart, removeFromCartAtIndex, updatePrice, removeISBNWithListingType} from "../store/cart.js";
 import {bookHref, capitalize, imageUrl} from "../services/utils.js";
 import Button from "../components/Button.vue";
 import CartLineItem from "../components/CartLineItem.vue";
@@ -80,6 +80,12 @@ function goToCheckout() {
         }
         if (resp.type === "price_mismatch"){
           updatePrice(resp.data.isbn, resp.data.listingType, resp.data.actualPrice)
+          alert(resp.error)
+          data.loadingCheckout = false
+          return
+        }
+        if (resp.type === "out_of_stock"){
+          removeISBNWithListingType(resp.data.isbn, resp.data.listingType)
           alert(resp.error)
           data.loadingCheckout = false
           return

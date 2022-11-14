@@ -28,7 +28,7 @@ export function removeFromCartAtIndex(index){
 
 export function removeISBNWithListingType(isbn, type){
     for(let i = 0; i < cart.items.length; i++){
-        if (cart.items[i].listing.type !== listingType){
+        if (cart.items[i].listing.type !== type){
             continue
         }
         let found = false
@@ -64,10 +64,8 @@ export function updatePrice(isbn, listingType, newPrice){
         if(!found){
             continue
         }
-        alert('here')
-        alert(cart.items[i].listing.price_in_cents)
         cart.items[i].listing.price_in_cents = newPrice
-        alert(cart.items[i].listing.price_in_cents)
+
     }
     localStorage.setItem(cartKey, JSON.stringify(cart))
 }
