@@ -1,6 +1,6 @@
 <template>
   <div class="flex my-4 items-center">
-    <b class="float-left">{{ label }}</b>
+    <b class="">{{ label }}</b>
     <div class="dot"></div>
     <div class="ml-auto float-left">
       {{value}}

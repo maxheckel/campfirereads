@@ -25,6 +25,7 @@ type stripeService struct {
 const isbnKey = "ISBN"
 const amazonURLKey = "amazon_url"
 const listingTypeKey = "listing_type"
+const authorsKey = "authors"
 
 func Stripe(cfg *config.Config, amazon service.Amazon) Service {
 	stripe.Key = cfg.StripePrivateAPIKey
@@ -39,11 +40,11 @@ func Stripe(cfg *config.Config, amazon service.Amazon) Service {
 func (s *stripeService) CreateOrRetrieveProduct(book domain.Book) (id string, err error) {
 	panic("blah")
 }
-func (s *stripeService) GetCheckoutURL(books []*domain.BookWithListing) (string, error) {
-	lineItems := make([]*stripe.CheckoutSessionLineItemParams, len(books))
-	errs := make([]error, len(books))
+func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing, internalOrderID string) (string, error) {
+	lineItems := make([]*stripe.CheckoutSessionLineItemParams, len(booksWithListings))
+	errs := make([]error, len(booksWithListings))
 	wg := sync.WaitGroup{}
-	for i, b := range books {
+	for i, b := range booksWithListings {
 		i := i
 		wg.Add(1)
 		go func(b *domain.BookWithListing) {
@@ -76,9 +77,10 @@ func (s *stripeService) GetCheckoutURL(books []*domain.BookWithListing) (string,
 		}
 	}
 	params := &stripe.CheckoutSessionParams{
-		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}?clearCart=1", s.frontendURL)),
+		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}", s.frontendURL)),
 		CancelURL:          stripe.String(fmt.Sprintf("%s/cart", s.frontendURL)),
 		LineItems:          lineItems,
+		ClientReferenceID:  stripe.String(internalOrderID),
 		Mode:               stripe.String(string(stripe.CheckoutSessionModePayment)),
 		PaymentMethodTypes: []*string{stripe.String("card")},
 		ShippingAddressCollection: &stripe.CheckoutSessionShippingAddressCollectionParams{
@@ -133,10 +135,11 @@ func (s *stripeService) createOrRetrievePrice(product *stripe.Product, listing *
 	return price.New(params)
 }
 
-func (s *stripeService) GetReceipt(id string) (*domain.Receipt, error) {
+func (s *stripeService) GetOrder(id string) (*domain.Receipt, error) {
 	receipt := &domain.Receipt{}
 	sessionParams := stripe.CheckoutSessionParams{}
 	sessionParams.AddExpand("customer")
+	sessionParams.AddExpand("payment_intent")
 	stripeSession, err := session.Get(id, &sessionParams)
 	if err != nil {
 		return nil, err
@@ -157,6 +160,23 @@ func (s *stripeService) GetReceipt(id string) (*domain.Receipt, error) {
 		State:   stripeSession.ShippingDetails.Address.State,
 		Zip:     stripeSession.ShippingDetails.Address.PostalCode,
 	}
+
+	receipt.Billing = domain.Address{
+		Street1: stripeSession.PaymentIntent.Charges.Data[0].BillingDetails.Address.Line1,
+		Street2: stripeSession.PaymentIntent.Charges.Data[0].BillingDetails.Address.Line2,
+		City:    stripeSession.PaymentIntent.Charges.Data[0].BillingDetails.Address.City,
+		State:   stripeSession.PaymentIntent.Charges.Data[0].BillingDetails.Address.State,
+		Zip:     stripeSession.PaymentIntent.Charges.Data[0].BillingDetails.Address.PostalCode,
+	}
+
+	paymentDetails := stripeSession.PaymentIntent.Charges.Data[0].PaymentMethodDetails
+	receipt.PaymentType = string(paymentDetails.Type)
+	if paymentDetails.Type == "card" {
+		receipt.PaymentIdentifier = fmt.Sprintf("Last 4: %s, Expires: %d/%d", paymentDetails.Card.Last4, paymentDetails.Card.ExpMonth, paymentDetails.Card.ExpYear)
+	}
+	receipt.TotalInCents = stripeSession.AmountTotal
+	receipt.OrderID = stripeSession.ClientReferenceID
+
 	params := &stripe.CheckoutSessionListLineItemsParams{}
 	params.Session = stripe.String(id)
 	params.AddExpand("data.price.product")
@@ -168,6 +188,7 @@ func (s *stripeService) GetReceipt(id string) (*domain.Receipt, error) {
 			return nil, err
 		}
 		if li != nil {
+
 			receipt.Books = append(receipt.Books, domain.BookWithListing{
 				Book: &domain.Book{
 					VolumeInfo: &domain.VolumeInfo{
@@ -179,6 +200,9 @@ func (s *stripeService) GetReceipt(id string) (*domain.Receipt, error) {
 								Type:       "ISBN_13",
 								Identifier: li.Price.Product.Metadata[isbnKey],
 							},
+						},
+						Authors: []string{
+							li.Price.Product.Metadata[authorsKey],
 						},
 					},
 				},
@@ -248,6 +272,7 @@ func (s *stripeService) productForBook(book *domain.BookWithListing) (*stripe.Pr
 	createReq.Description = &description
 	createReq.AddMetadata(amazonURLKey, book.Listing.URL.Path)
 	createReq.AddMetadata(isbnKey, book.Book.ISBN())
+	createReq.AddMetadata(authorsKey, strings.Trim(strings.Join(book.Book.VolumeInfo.Authors, ", "), ", "))
 	return product.New(createReq)
 }
 

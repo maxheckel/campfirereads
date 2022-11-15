@@ -7,6 +7,8 @@ import (
 	"github.com/maxheckel/campfirereads/internal/domain"
 	"github.com/maxheckel/campfirereads/internal/service/payments"
 	"io"
+	"math/rand"
+	"time"
 )
 
 type PaymentHandler interface {
@@ -22,6 +24,15 @@ func (a *APIHandler) GetPublicKey(c *gin.Context) {
 	c.JSON(200, gin.H{"key": key})
 }
 
+func RandStringRunes(n int) string {
+	rand.Seed(time.Now().UnixNano())
+	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
 func (a *APIHandler) GetCheckoutURL(c *gin.Context) {
 	var booksWithListings []*domain.BookWithListing
 	body, err := io.ReadAll(c.Request.Body)
@@ -34,7 +45,8 @@ func (a *APIHandler) GetCheckoutURL(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err})
 		return
 	}
-	url, err := a.payments.GetCheckoutURL(booksWithListings)
+
+	url, err := a.payments.CheckoutURL(booksWithListings, RandStringRunes(7))
 	if err != nil {
 		var priceMismatchErr *payments.PriceMismatchErr
 		if errors.As(err, &priceMismatchErr) {
@@ -76,7 +88,7 @@ func (a *APIHandler) Receipt(c *gin.Context) {
 	if id == "" {
 		c.JSON(500, gin.H{"error": errors.New("missing url parameter ID")})
 	}
-	res, err := a.payments.GetReceipt(id)
+	res, err := a.payments.GetOrder(id)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err})
 		return

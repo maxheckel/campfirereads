@@ -27,7 +27,8 @@ func (e *PriceMismatchErr) Error() string {
 
 type Service interface {
 	CreateOrRetrieveProduct(book domain.Book) (id string, err error)
-	GetCheckoutURL([]*domain.BookWithListing) (id string, err error)
-	GetReceipt(id string) (*domain.Receipt, error)
+	CheckoutURL(booksWithListings []*domain.BookWithListing, internalOrderID string) (id string, err error)
+	GetOrder(id string) (*domain.Receipt, error)
+
 	GetPublicKey() (string, error)
 }

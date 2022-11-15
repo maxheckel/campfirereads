@@ -11,8 +11,11 @@
           <div class="relative">
             <h2 class="text-2xl">{{ item.book.volumeInfo.title }}</h2>
             <div class="italic">By {{ item.book.volumeInfo.authors.join(', ').trim(', ') }}</div>
-            <div>
+            <div v-if="!data.isbnToLoadingPrice[bookToISBN(item.book)]">
               {{ capitalize(item.listing.type) }} ${{ (item.listing.price_in_cents + 1000) / 100 }}
+            </div>
+            <div v-else>
+              Loading Price...
             </div>
             <Button @click="removeFromCartAtIndex(index)"
                     class="text-sm my-4 font-normal ml-auto block top-0 md:absolute right-0 py-1 px-1 border-2  !hover:bg-red-200 border-red-200 text-np-dark-brown !bg-white"
@@ -24,16 +27,21 @@
       </div>
 
       <div>
-        <div class="border border-gray-500 rounded-md h-auto p-4">
+        <div class="border border-gray-500 rounded-md h-auto p-4 border-dashed	bg-np-yellow-200">
           <b class="text-lg">Summary</b>
 
           <CartLineItem :value="''+cart.items.length" :label="'Items'"></CartLineItem>
-          <CartLineItem :value="'$'+(subtotal()/100)" :label="'Subtotal'"></CartLineItem>
-          <CartLineItem :value="'$'+(smoke())" :label="'Smoke'"></CartLineItem>
-          <CartLineItem :value="'$'+(total()/100)" :label="'Total'"></CartLineItem>
-          <Button @click="goToCheckout()" v-if="!data.loadingCheckout" class="w-full text-center mt-10"
-                  :text="'Proceed to Checkout'"></Button>
-          <Loading class="relative mx-auto" v-if="data.loadingCheckout"></Loading>
+          <template v-if="!loadingAnyPrices()">
+            <CartLineItem :value="'$'+(subtotal()/100)" :label="'Subtotal'"></CartLineItem>
+            <CartLineItem :value="'$'+(smoke())" :label="'Smoke'"></CartLineItem>
+            <CartLineItem :value="'$'+(total()/100)" :label="'Total'"></CartLineItem>
+
+            <Button @click="goToCheckout()" v-if="!data.loadingCheckout" class="w-full text-center mt-10"
+                    :text="'Proceed to Checkout'"></Button>
+
+
+          </template>
+          <Loading class="relative mx-auto" v-if="data.loadingCheckout || loadingAnyPrices()"></Loading>
         </div>
 
       </div>
@@ -49,16 +57,56 @@
 <script setup>
 
 import Header from "../components/Header.vue";
-import {cart, removeFromCartAtIndex, updatePrice, removeISBNWithListingType} from "../store/cart.js";
+import {bookToISBN, cart, removeFromCartAtIndex, removeISBNWithListingType, updatePrice} from "../store/cart.js";
 import {bookHref, capitalize, imageUrl} from "../services/utils.js";
 import Button from "../components/Button.vue";
 import CartLineItem from "../components/CartLineItem.vue";
-import {reactive} from "vue";
+import {onMounted, reactive} from "vue";
 import Loading from "../components/icons/Loading.vue";
 
 const data = reactive({
   loadingCheckout: false,
-  loadingPrices: false
+  loadingPrices: false,
+  isbnToLoadingPrice: {}
+})
+
+function loadingAnyPrices() {
+  for (let x = 0; x < Object.keys(data.isbnToLoadingPrice).length; x++) {
+    if (data.isbnToLoadingPrice[Object.keys(data.isbnToLoadingPrice)[x]]) {
+      return true
+    }
+  }
+}
+
+// Refresh the prices if they're > 1d old.  This prevents us from having skew when checking out.
+onMounted(() => {
+  var OneDay = new Date().getTime() - (24 * 60 * 60 * 1000)
+  cart.items.forEach((item) => {
+    if (new Date(item.addedOn).getTime() < OneDay) {
+      data.isbnToLoadingPrice[bookToISBN(item.book)] = true
+      fetch(import.meta.env.VITE_API_HOST + "isbn/" + bookToISBN(item.book) + '/price')
+          .then((response) => response.json())
+          .then((resp) => {
+            let found = false;
+            resp.listings.forEach((l) => {
+              if (l.type === item.listing.type) {
+                found = true;
+                item.addedOn = new Date();
+                updatePrice(bookToISBN(item.book), item.listing.type, l.price_in_cents)
+              }
+            })
+
+            if (!found) {
+              removeISBNWithListingType(bookToISBN(item.book), item.listing.type)
+              alert("Some items in your cart are no longer available, they've been automatically removed.")
+            }
+
+            data.isbnToLoadingPrice[bookToISBN(item.book)] = false
+
+          });
+    }
+
+  })
 })
 
 function goToCheckout() {
@@ -74,17 +122,17 @@ function goToCheckout() {
   })
       .then((response) => response.json())
       .then((resp) => {
-        if (resp.url){
+        if (resp.url) {
           window.location = resp.url
           return
         }
-        if (resp.type === "price_mismatch"){
+        if (resp.type === "price_mismatch") {
           updatePrice(resp.data.isbn, resp.data.listingType, resp.data.actualPrice)
           alert(resp.error)
           data.loadingCheckout = false
           return
         }
-        if (resp.type === "out_of_stock"){
+        if (resp.type === "out_of_stock") {
           removeISBNWithListingType(resp.data.isbn, resp.data.listingType)
           alert(resp.error)
           data.loadingCheckout = false

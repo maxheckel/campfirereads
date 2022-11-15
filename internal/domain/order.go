@@ -8,10 +8,15 @@ type BookWithListing struct {
 }
 
 type Receipt struct {
-	OrderedOn time.Time         `json:"orderedOn"`
-	Books     []BookWithListing `json:"books"`
-	Shipping  Address           `json:"shipping"`
-	Customer  Customer          `json:"customer"`
+	OrderID           string            `json:"orderID"`
+	OrderedOn         time.Time         `json:"orderedOn"`
+	Books             []BookWithListing `json:"books"`
+	Shipping          Address           `json:"shipping"`
+	Billing           Address           `json:"billing"`
+	Customer          Customer          `json:"customer"`
+	TotalInCents      int64             `json:"totalInCents"`
+	PaymentType       string            `json:"paymentType"`
+	PaymentIdentifier string            `json:"paymentIdentifier"`
 }
 
 type Customer struct {
