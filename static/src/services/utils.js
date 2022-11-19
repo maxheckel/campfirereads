@@ -8,7 +8,7 @@ export function capitalize(word) {
 export function bookHref(book){
     let isbn = book.volumeInfo?.industryIdentifiers?.find((ii) => ii.type == 'ISBN_13')
     if (isbn){
-        return '/book/'+isbn.identifier;
+        return '/book/'+isbn.identifier+'?v='+book.id;
     }
     return undefined;
 }
@@ -26,5 +26,5 @@ export const decimalHash = string => {
 
 
 export function imageUrl(book) {
-    return book.volumeInfo.imageLinks.thumbnail.replace("edge=curl", "").replace("http://", "https://")
+    return book.volumeInfo.imageLinks?.thumbnail?.replace("edge=curl", "").replace("http://", "https://")
 }

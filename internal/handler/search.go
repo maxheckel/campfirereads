@@ -41,7 +41,14 @@ func (a *APIHandler) Search(c *gin.Context) {
 
 func (a *APIHandler) ISBN(c *gin.Context) {
 	ISBN := c.Param("isbn")
-	book, err := a.google.GetISBN(ISBN, 0)
+	vID := c.Query("v")
+	var book *domain.Book
+	var err error
+	if vID == "" {
+		book, err = a.google.GetISBN(ISBN, 0)
+	} else {
+		book, err = a.google.GetVolumeByID(vID, ISBN, 0)
+	}
 	if err != nil {
 		c.JSON(500, gin.H{"error": err})
 		return

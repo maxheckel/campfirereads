@@ -260,16 +260,20 @@ func (s *stripeService) productForBook(book *domain.BookWithListing) (*stripe.Pr
 	for iter.Next() {
 		return iter.Product(), nil
 	}
+	createReq := &stripe.ProductParams{}
+
 	description := book.Book.VolumeInfo.Description
-	words := strings.Split(description, " ")
-	if len(words) > 25 {
-		description = strings.Join(words[0:25], " ") + "..."
+	if description != "" {
+		words := strings.Split(description, " ")
+		if len(words) > 25 {
+			description = strings.Join(words[0:25], " ") + "..."
+		}
+		createReq.Description = &description
 	}
 
-	createReq := &stripe.ProductParams{}
 	createReq.Name = &book.Book.VolumeInfo.Title
 	createReq.Images = append(createReq.Images, &book.Book.VolumeInfo.ImageLinks.Thumbnail)
-	createReq.Description = &description
+
 	createReq.AddMetadata(amazonURLKey, book.Listing.URL.Path)
 	createReq.AddMetadata(isbnKey, book.Book.ISBN())
 	createReq.AddMetadata(authorsKey, strings.Trim(strings.Join(book.Book.VolumeInfo.Authors, ", "), ", "))

@@ -27,3 +27,7 @@ static
 static/*
 ./static
 ./static/*
+backroom
+backroom/*
+./backroom
+./backroom/*

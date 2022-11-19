@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/maxheckel/campfirereads/internal/config"
 	"github.com/maxheckel/campfirereads/internal/domain"
@@ -16,6 +17,7 @@ import (
 type Google interface {
 	GetBooks(search domain.BookSearch) (*domain.BookSearchResult, error)
 	GetISBN(isbn string, sleep int) (*domain.Book, error)
+	GetVolumeByID(id, isbn string, sleep int) (*domain.Book, error)
 }
 
 type google struct {
@@ -25,6 +27,57 @@ type google struct {
 
 func NewGoogle(cfg *config.Config, cache cache.Service) Google {
 	return &google{config: cfg, cache: cache}
+}
+
+func (g google) GetVolumeByID(id, isbn string, sleep int) (*domain.Book, error) {
+	if isbn == "" {
+		return nil, errors.New("you must provide a valid isbn")
+	}
+	cacheKey := isbn
+	cachedBook, err := g.cache.Read(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+	if b, ok := cachedBook.(*domain.Book); ok {
+		return b, nil
+	}
+	if id == "" {
+		return nil, errors.New("you must provide a valid volume id")
+	}
+	res := &domain.Book{}
+	reqURL := fmt.Sprintf("https://www.googleapis.com/books/v1/volumes/%s?key=%s", id, g.config.GoogleAPIKey)
+	query, err := url.Parse(reqURL)
+	if err != nil {
+		return nil, err
+	}
+	response, err := http.Get(query.String())
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(body, res)
+	if response.StatusCode != 200 {
+		if response.StatusCode == 429 && strings.Contains(string(body), "RATE_LIMIT_EXCEEDED") {
+			if sleep >= 5 {
+				return nil, err
+			}
+			fmt.Printf("Backoff on ISBN %s, waiting %d seconds\n", isbn, sleep)
+			time.Sleep(time.Second * time.Duration(sleep))
+			return g.GetISBN(isbn, sleep+(sleep*2))
+		}
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	err = g.cache.Write(cacheKey, res, 24*60*60)
+	return res, err
 }
 
 func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
@@ -37,7 +90,7 @@ func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
 		return b, nil
 	}
 	res := &domain.BookSearchResult{}
-	reqURL := fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?langRestrict=en&key=%s&q=isbn:%s", g.config.GoogleAPIKey, isbn)
+	reqURL := fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?key=%s&q=isbn:%s", g.config.GoogleAPIKey, isbn)
 	query, err := url.Parse(reqURL)
 	if err != nil {
 		return nil, err

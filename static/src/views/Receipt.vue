@@ -30,6 +30,7 @@
           </div>
 
         </div>
+        <Support/>
       </div>
 
       <div>
@@ -60,6 +61,7 @@ import Loading from "../components/icons/Loading.vue";
 import CartLineItem from "../components/CartLineItem.vue";
 import Header from "../components/Header.vue";
 import Address from "../components/Address.vue";
+import Support from "../components/Support.vue";
 
 const route = useRoute();
 const id = route.params.id

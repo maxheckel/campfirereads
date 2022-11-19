@@ -14,11 +14,11 @@
             Loading price...
           </div>
           <template v-else>
-            <div v-if="getListings().length > 1" class="">
+            <div v-if="hasTwoListings()" class="">
               ${{ lowestPrice() / 100 }} - ${{ highestPrice() / 100 }}
             </div>
             <div v-else-if="getListings().length > 0" class="text-xl my-2">
-              {{ capitalize(getListings()[0].type) }} ${{ (getListings()[0].price_in_cents + 1000) / 100 }}
+              {{ capitalize(getListingsWithPrice()[0].type) }} ${{ (getListingsWithPrice()[0].price_in_cents + 1000) / 100 }}
             </div>
           </template>
 
@@ -32,8 +32,13 @@
 
           <select v-model="data.selectedListing" class=" block p-2 px-6 border rounded-md rounded mt-4 text-lg"
                   v-if="getListings().length > 1 && !data.loading">
-            <option :value="i" :selected="data.selectedListing === i" v-for="(listing, i) in getListings()">
-              {{ capitalize(listing.type) }} ${{ (listing.price_in_cents + 1000) / 100 }}
+            <option :value="i" :selected="data.selectedListing == i" v-for="(listing, i) in getListings()" :disabled="listing.price_in_cents === -1">
+              <template v-if="listing.price_in_cents !== -1">
+                {{ capitalize(listing.type) }} ${{ (listing.price_in_cents + 1000) / 100 }}
+              </template>
+              <template v-else>
+                {{ capitalize(listing.type) }} - Out Of Stock
+              </template>
             </option>
           </select>
           <div class="block mt-4" v-if="isInCart()">
@@ -48,8 +53,12 @@
 
             </router-link>
           </div>
-          <Button v-if="!data.loadingPrice" @click="formatAndAddToCart()" class="my-4 block"
+          <Button v-if="!data.loadingPrice && !data.unavailable" @click="formatAndAddToCart()" class="my-4 block"
                   :text="'Add to Cart'"></Button>
+          <Button v-if="data.unavailable" class="bg-gray-200 text-gray-400 my-4 block"
+                  :text="'Out of Stock'">
+
+          </Button>
           <Button v-if="data.loadingPrice" class="bg-gray-200 text-gray-400 my-4 block"
                   :text="'Loading Price'"></Button>
         </template>
@@ -74,6 +83,8 @@ import {capitalize, imageUrl} from "../services/utils.js";
 
 const route = useRoute();
 const isbn = route.params.isbn
+const vID = route.query.v
+
 
 const data = reactive({
   book: {},
@@ -82,7 +93,8 @@ const data = reactive({
   loadingPrice: true,
   showingFullDescription: false,
   descriptionIsSmall: false,
-  selectedListing: 1
+  selectedListing: 1,
+  unavailable: false
 })
 
 function formatAndAddToCart() {
@@ -111,17 +123,37 @@ function isInCart() {
   return false;
 }
 
+function hasTwoListings(){
+  return getListingsWithPrice().length > 1
+}
+
+function getListingsWithPrice(){
+  return getListings().filter((l) => l.price_in_cents > 0)
+}
+
 
 function getListings() {
-  return data.prices.filter((l) => l.price_in_cents > 0)
+  if (data.prices.length === 1){
+    data.prices.push({
+      type: data.prices[0].type ===  "paperback" ? "hardcover" : "paperback",
+      price_in_cents: -1
+    })
+    // Default the price to whatever the first listing with a price is, assuming there is one.
+    data.prices.forEach((p, i) => {
+      if(p.price_in_cents > 0){
+        data.selectedListing = i
+      }
+    })
+  }
+  return data.prices
 }
 
 function lowestPrice() {
-  return getListings().sort((a, b) => a.price_in_cents - b.price_in_cents)[0].price_in_cents + 1000
+  return getListingsWithPrice().sort((a, b) => a.price_in_cents - b.price_in_cents)[0].price_in_cents + 1000
 }
 
 function highestPrice() {
-  return getListings().sort((a, b) => b.price_in_cents - a.price_in_cents)[0].price_in_cents + 1000
+  return getListingsWithPrice().sort((a, b) => b.price_in_cents - a.price_in_cents)[0].price_in_cents + 1000
 }
 
 function description() {
@@ -137,13 +169,14 @@ function description() {
 
 onMounted(() => {
 
-  fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn)
+  fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn+'?v='+vID)
       .then((response) => response.json())
       .then((resp) => {
+        console.log(resp)
         data.book = resp.book;
         data.loadingBook = false;
         if (data.book == null) {
-          window.location.href = '/'
+
         }
       });
   fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn + '/price')
@@ -152,7 +185,7 @@ onMounted(() => {
         data.prices = resp.listings;
         data.loadingPrice = false;
         if (data.prices.length == 0) {
-          window.location.href = '/'
+          data.unavailable = true
         }
       });
 })

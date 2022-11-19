@@ -18,10 +18,10 @@ onMounted(() => {
       <div class="sm:w-1/2 md:w-1/3 -mt-10">
         <h3 class="font-bold uppercase text-2xl">Campfire Reads</h3>
         <div class="text-np-yellow-200">
-          Campfire Reads provides a marketplace for a large amount of books shipped directly to your house.
+          Get books imbued with the smell of campfire shipped directly to your door.  Choose from thousands of books, classics to contemporary, and receive it with each page smelling like you're sitting around the campfire.
           <div class="text-xs my-4">
             <b>Smoked Book</b> (sməʊkt bo͝ok): A book that has been imbued with the smell of campfire. Instant nostalgia
-            at your fingertips without leaving the hhouse.
+            at your fingertips without leaving the house.
           </div>
         </div>
       </div>
@@ -30,8 +30,7 @@ onMounted(() => {
         <b>Links</b>
         <a class="block" href="/about">About Us</a>
         <a class="block" href="/contact">Contact</a>
-        <a class="block" href="/contact">Terms of Service</a>
-        <a class="block" href="/contact">Privacy Policy</a>
+        <a class="block" href="/privacy">Privacy Policy</a>
 
       </div>
     </div>
