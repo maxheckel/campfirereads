@@ -28,6 +28,8 @@ func NewAPI() (*App, error) {
 	amazon := service.NewAmazon(cacheService)
 	merchant := payments.Stripe(srv.Config, amazon)
 	h := handler.NewAPI(service.NewGoogle(srv.Config, cacheService), amazon, service.NewNYT(srv.Config, cacheService), cacheService, merchant)
+	srv.Gin.TrustedPlatform = gin.PlatformGoogleAppEngine
+	srv.Gin.SetTrustedProxies([]string{""})
 	srv.Gin.Use(CORSMiddleware())
 	srv.Gin.GET("/search", h.Search)
 	srv.Gin.GET("/isbn/:isbn", h.ISBN)
