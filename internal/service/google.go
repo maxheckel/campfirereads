@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -30,6 +31,10 @@ func NewGoogle(cfg *config.Config, cache cache.Service) Google {
 }
 
 func (g google) GetVolumeByID(id, isbn string, sleep int) (*domain.Book, error) {
+	// If it's not numeric then we should just skip
+	if _, err := strconv.Atoi(isbn); err != nil {
+		return nil, nil
+	}
 	if isbn == "" {
 		return nil, errors.New("you must provide a valid isbn")
 	}
@@ -69,7 +74,7 @@ func (g google) GetVolumeByID(id, isbn string, sleep int) (*domain.Book, error) 
 			}
 			fmt.Printf("Backoff on ISBN %s, waiting %d seconds\n", isbn, sleep)
 			time.Sleep(time.Second * time.Duration(sleep))
-			return g.GetISBN(isbn, sleep+(sleep*2))
+			return g.GetISBN(isbn, sleep+1)
 		}
 		return nil, err
 	}
@@ -81,6 +86,10 @@ func (g google) GetVolumeByID(id, isbn string, sleep int) (*domain.Book, error) 
 }
 
 func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
+	// If it's not numeric then we should just skip
+	if _, err := strconv.Atoi(isbn); err != nil {
+		return nil, nil
+	}
 	cacheKey := isbn
 	cachedBook, err := g.cache.Read(cacheKey)
 	if err != nil {
@@ -114,7 +123,7 @@ func (g google) GetISBN(isbn string, sleep int) (*domain.Book, error) {
 			}
 			fmt.Printf("Backoff on ISBN %s, waiting %d seconds\n", isbn, sleep)
 			time.Sleep(time.Second * time.Duration(sleep))
-			return g.GetISBN(isbn, sleep+(sleep*2))
+			return g.GetISBN(isbn, sleep+1)
 		}
 
 		return nil, err
