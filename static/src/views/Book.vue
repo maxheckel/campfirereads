@@ -138,12 +138,6 @@ function getListings() {
       type: data.prices[0].type ===  "paperback" ? "hardcover" : "paperback",
       price_in_cents: -1
     })
-    // Default the price to whatever the first listing with a price is, assuming there is one.
-    data.prices.forEach((p, i) => {
-      if(p.price_in_cents > 0){
-        data.selectedListing = i
-      }
-    })
   }
   return data.prices
 }
@@ -172,11 +166,10 @@ onMounted(() => {
   fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn+'?v='+vID)
       .then((response) => response.json())
       .then((resp) => {
-        console.log(resp)
         data.book = resp.book;
         data.loadingBook = false;
         if (data.book == null) {
-
+          window.location = '/not-found'
         }
       });
   fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn + '/price')
@@ -186,6 +179,13 @@ onMounted(() => {
         data.loadingPrice = false;
         if (data.prices.length == 0) {
           data.unavailable = true
+        } else{
+          // Default the price to whatever the first listing with a price is, assuming there is one.
+          data.prices.forEach((p, i) => {
+            if(p.price_in_cents > 0){
+              data.selectedListing = i
+            }
+          })
         }
       });
 })

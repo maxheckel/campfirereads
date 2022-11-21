@@ -77,7 +77,7 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 		}
 	}
 	params := &stripe.CheckoutSessionParams{
-		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}", s.frontendURL)),
+		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}?clearCart=true", s.frontendURL)),
 		CancelURL:          stripe.String(fmt.Sprintf("%s/cart", s.frontendURL)),
 		LineItems:          lineItems,
 		ClientReferenceID:  stripe.String(internalOrderID),
@@ -116,7 +116,10 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 }
 
 func (s *stripeService) createOrRetrievePrice(product *stripe.Product, listing *domain.AmazonListing) (*stripe.Price, error) {
-	unitAmount := stripe.Int64(int64(listing.PriceInCents + 1000))
+	unitAmount := stripe.Int64(listing.PriceInCents + 1000)
+	if *unitAmount <= 1000 {
+		return nil, fmt.Errorf("unit amount is too low: %d", unitAmount)
+	}
 	query := &stripe.PriceSearchParams{}
 	query.Query = *stripe.String(fmt.Sprintf("product:'%s' AND metadata['%s']:'%s'", product.ID, listingTypeKey, listing.Type))
 	iter := price.Search(query)

@@ -1,4 +1,5 @@
 import {reactive} from "vue";
+import {capitalize} from "../services/utils";
 
 export const cart = reactive({
     items: [],
@@ -16,6 +17,10 @@ export function clear(){
 }
 
 export function addToCart(book){
+    if(book.listing.price_in_cents <= 0){
+        alert('Whoops, something went wrong. '+capitalize(book.listing.type) + " is not available, please try another format.")
+        return
+    }
     cart.items.push(book)
     localStorage.setItem(cartKey, JSON.stringify(cart))
     cart.justAdded = true

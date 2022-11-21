@@ -82,6 +82,12 @@ function loadingAnyPrices() {
 onMounted(() => {
   var OneDay = new Date().getTime() - (24 * 60 * 60 * 1000)
   cart.items.forEach((item) => {
+    if (item.listing.price_in_cents <= 0){
+
+      removeISBNWithListingType(bookToISBN(item.book), item.listing.type)
+      alert(item.book.volumeInfo.title + "is not available, it has been removed from your cart.")
+      return
+    }
     if (new Date(item.addedOn).getTime() < OneDay) {
       data.isbnToLoadingPrice[bookToISBN(item.book)] = true
       fetch(import.meta.env.VITE_API_HOST + "isbn/" + bookToISBN(item.book) + '/price')
