@@ -1,7 +1,7 @@
 .idea
-.air.toml
+api/.air.toml
 tmp/
 .api.env
 .ui.env
-app.yaml
+api/app.yaml
 static/.firebase
