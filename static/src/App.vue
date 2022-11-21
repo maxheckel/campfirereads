@@ -14,7 +14,7 @@ onMounted(() => {
   <router-view/>
   <div class="footer-head w-full h-[100px] bg-np-dark-brown mt-20"></div>
   <footer class="w-full p-4 bg-np-dark-brown ">
-    <div class="text-np-yellow  sm:flex items-center -mb-2 z-10 relative block  shadow-lg">
+    <div class="text-np-yellow  sm:flex items-center -mb-2 z-10 relative block">
       <div class="sm:w-1/2 md:w-1/3 -mt-10">
         <h3 class="font-bold uppercase text-2xl">Campfire Reads</h3>
         <div class="text-np-yellow-200">

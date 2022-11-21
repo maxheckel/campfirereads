@@ -26,5 +26,5 @@ export const decimalHash = string => {
 
 
 export function imageUrl(book) {
-    return book.volumeInfo.imageLinks?.thumbnail?.replace("edge=curl", "").replace("http://", "https://")
+    return book.volumeInfo.imageLinks?.thumbnail?.replace("edge=curl", "").replace("http://", "https://").replace('zoom=1', 'zoom=50')
 }
