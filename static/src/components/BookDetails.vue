@@ -10,7 +10,7 @@
       <b class="font-bold">Published Date: </b> {{ book.volumeInfo.publishedDate }}
     </div>
     <div>
-      <b class="font-bold">Categories: </b> {{ book.volumeInfo.categories.join(', ').trim(', ') }}
+      <b class="font-bold">Categories: </b> {{ book.volumeInfo.categories?.join(', ').trim(', ') }}
     </div>
     <div>
       <b class="font-bold">Mature: </b> {{ book.volumeInfo.maturityRating === "NOT_MATURE" ? "No" : "Yes" }}

@@ -221,6 +221,7 @@ onMounted(() => {
   fetch(import.meta.env.VITE_API_HOST + "isbn/" + isbn + '/price')
       .then((response) => response.json())
       .then((resp) => {
+        console.log(resp)
         data.prices = resp.listings;
         data.loadingPrice = false;
         if (data.prices.length == 0) {

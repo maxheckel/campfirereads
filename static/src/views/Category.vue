@@ -46,10 +46,12 @@ const displayName = () => {
 
 
 
-fetch(import.meta.env.VITE_API_HOST + "/category/" + category)
+
+fetch(import.meta.env.VITE_API_HOST + "category/" + category)
     .then((response) => response.json())
     .then((resp) => {
       data.list = resp;
+      data.list.books = data.list.books.filter((b) => b)
       data.bgImage = "/media/covers/" + (decimalHash(data.list.list.display_name) + "").split('.')[1].slice(0, 2) + ".jpg"
       data.loading = false;
     });

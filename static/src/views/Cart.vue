@@ -6,7 +6,7 @@
         <div v-for="(item, index) in cart.items"
              class="grid md:grid-cols-[20%_80%] my-4 border-b-1 border-b-gray-200 border-b py-4 border-box">
           <a :href="bookHref(item.book)">
-            <img :src="imageUrl(item.book)" class="w-2/3 relative mx-auto ">
+            <img :src='thumbnailUrl(item.book)' class="w-2/3 relative mx-auto ">
           </a>
           <div class="relative">
             <h2 class="text-2xl">{{ item.book.volumeInfo.title }}</h2>
@@ -58,7 +58,7 @@
 
 import Header from "../components/Header.vue";
 import {bookToISBN, cart, removeFromCartAtIndex, removeISBNWithListingType, updatePrice} from "../store/cart.js";
-import {bookHref, capitalize, imageUrl} from "../services/utils.js";
+import {bookHref, capitalize, thumbnailUrl} from "../services/utils.js";
 import Button from "../components/Button.vue";
 import CartLineItem from "../components/CartLineItem.vue";
 import {onMounted, reactive} from "vue";
