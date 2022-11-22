@@ -53,7 +53,7 @@ func (n *nyt) GetCategory(category string) (*domain.GetBestSellerList, error) {
 }
 
 func (n *nyt) GetBestSellers() (*domain.AllListsBestSellers, error) {
-	bestSellersCache, err := n.cache.Read("bestsellers")
+	bestSellersCache, err := n.cache.Read("nyt-bestsellers")
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +75,6 @@ func (n *nyt) GetBestSellers() (*domain.AllListsBestSellers, error) {
 	if err != nil {
 		return nil, err
 	}
-	n.cache.Write("bestsellers", res, 24*60*60)
+	n.cache.Write("nyt-bestsellers", res, 24*60*60)
 	return res, nil
 }

@@ -15,6 +15,7 @@ const (
 	AllListsBestSellers
 	Book
 	AmazonListings
+	Unknown
 )
 
 func NewMemcache(address string) Service {
@@ -55,7 +56,7 @@ func (m *memcacheDriver) Write(key string, obj interface{}, timeoutSeconds int32
 	item := &memcache.Item{
 		Key:        key,
 		Value:      bytes,
-		Flags:      100000,
+		Flags:      Unknown,
 		Expiration: timeoutSeconds,
 	}
 	if _, ok := obj.(*domain.Book); ok {

@@ -19,7 +19,7 @@ func NewAppEngineMemcache() Service {
 func (a appengineMemcache) Read(key string) (interface{}, error) {
 	res, err := memcache.Get(context.Background(), key)
 	if err != nil {
-		fmt.Printf("ERROR RECEIVED %s", err.Error())
+		fmt.Printf("ERROR RECEIVED for key %s: %s", key, err.Error())
 	}
 	if res == nil {
 		return nil, nil
@@ -34,6 +34,8 @@ func (a appengineMemcache) Read(key string) (interface{}, error) {
 		obj = &domain.GetBestSellerList{}
 	case AmazonListings:
 		obj = &domain.AmazonListings{}
+	default:
+		return res.Value, nil
 	}
 	err = json.Unmarshal(res.Value, obj)
 	return obj, err
@@ -47,7 +49,7 @@ func (a appengineMemcache) Write(key string, obj interface{}, timeoutSeconds int
 	item := &memcache.Item{
 		Key:        key,
 		Value:      bytes,
-		Flags:      0,
+		Flags:      Unknown,
 		Expiration: time.Duration(timeoutSeconds) * time.Second,
 	}
 	if _, ok := obj.(*domain.Book); ok {
