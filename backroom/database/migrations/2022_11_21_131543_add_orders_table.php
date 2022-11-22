@@ -17,6 +17,8 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('order_id');
+            $table->string('internal_id');
+            $table->string('payment_id');
             $table->string('order_provider')->default('stripe');
             $table->timestamp('ordered_on');
             $table->boolean('fulfilled')->default(false);

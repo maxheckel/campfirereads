@@ -16,6 +16,8 @@ return new class extends Migration
         Schema::create('line_items', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->string('product_id');
+            $table->string('price_id');
             $table->foreignIdFor(\App\Models\Order::class);
             $table->string('amazon_url');
             $table->string('type');

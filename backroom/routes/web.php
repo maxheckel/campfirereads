@@ -24,10 +24,8 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/register-super-secret-link-no-one-knows-fabout', function (){
-    return Inertia::render('Auth/Register');
-});
-
+Route::any('/new-order', [\App\Http\Controllers\OrderController::class, 'create']);
+Route::get('/ordertest/{id}', [\App\Http\Controllers\OrderController::class, 'test']);
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
