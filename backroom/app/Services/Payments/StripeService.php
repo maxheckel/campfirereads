@@ -19,7 +19,9 @@ class StripeService implements PaymentService{
     {
         $order = Order::where('order_id', $id)->with('shippingAddress', 'lineItems')->first();
         if (!$order){
-            $cs = $this->client->checkout->sessions->retrieve($id);
+            $cs = $this->client->checkout->sessions->retrieve($id, [
+                'expand'=>['payment_intent']
+            ]);
             $lineItems = $this->client->checkout->sessions->allLineItems($id,[
                 'expand'=>['data.price.product']
             ]);
@@ -28,18 +30,19 @@ class StripeService implements PaymentService{
             DB::beginTransaction();
             $order = new Order();
             $order->internal_id = $cs->client_reference_id;
-            $order->payment_id = $cs->payment_intent;
+            $order->payment_id = $cs->payment_intent->id;
             $order->order_id = $id;
             $order->ordered_on = Carbon::parse($cs->created);
             $shipping = new Address();
             /** @var  $piShipping */
-            $shipping->name = $cs->customer_details->name;
-            $shipping->street1 = $cs->customer_details->address->line1;
-            $shipping->street2 = $cs->customer_details->address->line2;
-            $shipping->city = $cs->customer_details->address->city;
-            $shipping->state = $cs->customer_details->address->state;
-            $shipping->zip = $cs->customer_details->address->postal_code;
-            $shipping->country = $cs->customer_details->address->country;
+
+            $shipping->name = $cs->payment_intent->shipping->name;
+            $shipping->street1 = $cs->payment_intent->shipping->address->line1;
+            $shipping->street2 = $cs->payment_intent->shipping->address->line2;
+            $shipping->city = $cs->payment_intent->shipping->address->city;
+            $shipping->state = $cs->payment_intent->shipping->address->state;
+            $shipping->zip = $cs->payment_intent->shipping->address->postal_code;
+            $shipping->country = $cs->payment_intent->shipping->address->country;
             $shipping->save();
             $order->shipping_address_id = $shipping->id;
             $order->save();
@@ -49,7 +52,7 @@ class StripeService implements PaymentService{
                 $li->order_id = $order->id;
                 $li->product_id = $lineItem->price->product->id;
                 $li->price_id = $lineItem->price->id;
-                $li->type = $lineItem->price->metadata->listing_type;
+                $li->type = $lineItem->price->metadata->listing_type ?? 'unknown';
                 $li->amazon_url = "https://amazon.com/".trim($lineItem->price->product->metadata->amazon_url, '/');
                 $li->save();
             }
