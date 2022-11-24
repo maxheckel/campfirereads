@@ -33,3 +33,4 @@ export function imageUrl(book) {
 export function thumbnailUrl(book) {
     return book.volumeInfo.imageLinks?.thumbnail?.replace("edge=curl", "").replace("http://", "https://")
 }
+

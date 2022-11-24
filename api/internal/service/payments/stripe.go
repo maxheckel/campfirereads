@@ -116,8 +116,8 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 }
 
 func (s *stripeService) createOrRetrievePrice(product *stripe.Product, listing *domain.AmazonListing) (*stripe.Price, error) {
-	unitAmount := stripe.Int64(listing.PriceInCents + 1000)
-	if *unitAmount <= 1000 {
+	unitAmount := stripe.Int64(listing.PriceInCents + config.SmokeCostPerUnit)
+	if *unitAmount <= config.SmokeCostPerUnit {
 		return nil, fmt.Errorf("unit amount is too low: %d", unitAmount)
 	}
 	query := &stripe.PriceSearchParams{}

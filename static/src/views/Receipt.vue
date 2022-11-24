@@ -24,7 +24,7 @@
             <h2 class="text-2xl">{{ item.book.volumeInfo.title }}</h2>
             <div class="italic">By {{ item.book.volumeInfo.authors.join(', ').trim(', ') }}</div>
             <div>
-              {{ capitalize(item.listing.type) }} ${{ (item.listing.price_in_cents) / 100 }}
+              {{ capitalize(item.listing.type) }} ${{ ((item.listing.price_in_cents) / 100).toFixed(2) }}
             </div>
 
           </div>
@@ -39,9 +39,9 @@
           <CartLineItem :value="capitalize(data.receipt.paymentType)" :label="'Payment Type'"></CartLineItem>
           <div class="sm:text-right text-np-dark-brown italic" v-if="data.receipt.paymentIdentifier">{{data.receipt.paymentIdentifier}}</div>
           <CartLineItem :value="''+data.receipt.books.length" :label="'Items'"></CartLineItem>
-          <CartLineItem :value="'$'+(subtotal()/100)" :label="'Subtotal'"></CartLineItem>
-          <CartLineItem :value="'$'+(smoke())" :label="'Smoke'"></CartLineItem>
-          <CartLineItem :value="'$'+(total()/100)" :label="'Total'"></CartLineItem>
+          <CartLineItem :value="'$'+(subtotal()/100).toFixed(2)" :label="'Subtotal'"></CartLineItem>
+          <CartLineItem :value="'$'+(smoke()).toFixed(2)" :label="'Smoke'"></CartLineItem>
+          <CartLineItem :value="'$'+(total()/100).toFixed(2)" :label="'Total'"></CartLineItem>
 
 
         </div>
@@ -76,7 +76,7 @@ onMounted(() => {
   fetch(import.meta.env.VITE_API_HOST + "receipt/" + id)
       .then((response) => response.json())
       .then((resp) => {
-        var OneMinute = new Date().getTime() - (60 * 1000)
+        var OneMinute = new Date().getTime() - (60 * getSmoke().cost)
         data.loading = false;
         data.receipt = resp
         if (new Date(data.receipt.orderedOn).getTime() > OneMinute){
@@ -89,7 +89,7 @@ onMounted(() => {
 function subtotal() {
   let total = 0;
   data.receipt.books.forEach((b) => total+=b.listing.price_in_cents)
-  return total - (data.receipt.books.length*1000);
+  return total - (data.receipt.books.length*getSmoke().cost);
 }
 
 function smoke() {

@@ -39,6 +39,7 @@ func NewAPI() (*App, error) {
 	srv.Gin.GET("/popular", h.Popular)
 	srv.Gin.POST("/checkout", h.GetCheckoutURL)
 	srv.Gin.GET("/receipt/:id", h.Receipt)
+	srv.Gin.GET("/cost", h.GetCost)
 	// Healthcheck
 	srv.Gin.GET("/", func(context *gin.Context) {
 		context.Writer.Write([]byte("OK"))

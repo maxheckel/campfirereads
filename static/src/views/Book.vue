@@ -36,11 +36,11 @@
           <template v-else>
             <div class="text-xl">
               <div v-if="hasTwoListings()" class="">
-                ${{ lowestPrice() / 100 }} - ${{ highestPrice() / 100 }}
+                ${{ (lowestPrice() / 100).toFixed(2) }} - ${{ (highestPrice() / 100).toFixed(2) }}
               </div>
               <div v-else-if="getListings().length > 0" class="text-xl my-2">
                 {{ capitalize(getListingsWithPrice()[0].type) }}
-                ${{ (getListingsWithPrice()[0].price_in_cents + 1000) / 100 }}
+                $({{ ((getListingsWithPrice()[0].price_in_cents + getSmoke().cost) / 100).toFixed(2) }}
               </div>
             </div>
 
@@ -59,7 +59,7 @@
             <option :value="i" :selected="data.selectedListing == i" v-for="(listing, i) in getListings()"
                     :disabled="listing.price_in_cents === -1">
               <template v-if="listing.price_in_cents !== -1">
-                {{ capitalize(listing.type) }} ${{ (listing.price_in_cents + 1000) / 100 }}
+                {{ capitalize(listing.type) }} ${{ ((listing.price_in_cents + getSmoke().cost) / 100).toFixed(2) }}
               </template>
               <template v-else>
                 {{ capitalize(listing.type) }} - Out Of Stock
@@ -107,6 +107,7 @@ import Button from "../components/Button.vue";
 import {addToCart, cart} from "../store/cart.js";
 import {capitalize, imageUrl} from "../services/utils.js";
 import BookDetails from "../components/BookDetails.vue";
+import {getSmoke} from "../store/cost.js";
 
 const route = useRoute();
 const isbn = route.params.isbn
@@ -188,12 +189,13 @@ function getListings() {
   return data.prices
 }
 
+
 function lowestPrice() {
-  return getListingsWithPrice().sort((a, b) => a.price_in_cents - b.price_in_cents)[0].price_in_cents + 1000
+  return getListingsWithPrice().sort((a, b) => a.price_in_cents - b.price_in_cents)[0].price_in_cents + getSmoke().cost
 }
 
 function highestPrice() {
-  return getListingsWithPrice().sort((a, b) => b.price_in_cents - a.price_in_cents)[0].price_in_cents + 1000
+  return getListingsWithPrice().sort((a, b) => b.price_in_cents - a.price_in_cents)[0].price_in_cents + getSmoke().cost
 }
 
 function description() {

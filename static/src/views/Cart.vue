@@ -12,7 +12,7 @@
             <h2 class="text-2xl">{{ item.book.volumeInfo.title }}</h2>
             <div class="italic">By {{ item.book.volumeInfo.authors.join(', ').trim(', ') }}</div>
             <div v-if="!data.isbnToLoadingPrice[bookToISBN(item.book)]">
-              {{ capitalize(item.listing.type) }} ${{ (item.listing.price_in_cents + 1000) / 100 }}
+              {{ capitalize(item.listing.type) }} ${{ ((item.listing.price_in_cents + getSmoke().cost) / 100).toFixed(2) }}
             </div>
             <div v-else>
               Loading Price...
@@ -32,9 +32,9 @@
 
           <CartLineItem :value="''+cart.items.length" :label="'Items'"></CartLineItem>
           <template v-if="!loadingAnyPrices()">
-            <CartLineItem :value="'$'+(subtotal()/100)" :label="'Subtotal'"></CartLineItem>
-            <CartLineItem :value="'$'+(smoke())" :label="'Smoke'"></CartLineItem>
-            <CartLineItem :value="'$'+(total()/100)" :label="'Total'"></CartLineItem>
+            <CartLineItem :value="'$'+(subtotal()/100).toFixed(2)" :label="'Subtotal'"></CartLineItem>
+            <CartLineItem :value="'$'+(smoke()).toFixed(2)" :label="'Smoke'"></CartLineItem>
+            <CartLineItem :value="'$'+(total()/100).toFixed(2)" :label="'Total'"></CartLineItem>
 
             <Button @click="goToCheckout()" v-if="!data.loadingCheckout" class="w-full text-center mt-10"
                     :text="'Proceed to Checkout'"></Button>
@@ -63,6 +63,7 @@ import Button from "../components/Button.vue";
 import CartLineItem from "../components/CartLineItem.vue";
 import {onMounted, reactive} from "vue";
 import Loading from "../components/icons/Loading.vue";
+import {getSmoke} from "../store/cost.js";
 
 const data = reactive({
   loadingCheckout: false,
@@ -80,7 +81,7 @@ function loadingAnyPrices() {
 
 // Refresh the prices if they're > 1d old.  This prevents us from having skew when checking out.
 onMounted(() => {
-  var OneDay = new Date().getTime() - (24 * 60 * 60 * 1000)
+  var OneDay = new Date().getTime() - (24 * 60 * 60 * getSmoke().cost)
   cart.items.forEach((item) => {
     if (item.listing.price_in_cents <= 0){
 
@@ -162,13 +163,13 @@ function subtotal() {
 }
 
 function smoke() {
-  return cart.items.length * 10;
+  return cart.items.length * getSmoke().cost/100;
 }
 
 function total() {
   let total = 0;
   for (let x = 0; x < cart.items.length; x++) {
-    total += cart.items[x].listing.price_in_cents + 1000;
+    total += cart.items[x].listing.price_in_cents + getSmoke().cost;
   }
   return total;
 }

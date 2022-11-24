@@ -42,7 +42,7 @@
         <div>
           <span class="font-bold block">{{ cart.latestItem.book?.volumeInfo.title }}</span>
           <span class="italic block">by {{ cart.latestItem.book?.volumeInfo.authors.join(', ').trim(', ') }}</span>
-          {{ capitalize(cart.latestItem.listing.type) }} ${{ (cart.latestItem.listing.price_in_cents + 1000) / 100 }}
+          {{ capitalize(cart.latestItem.listing.type) }} ${{ ((cart.latestItem.listing.price_in_cents + getSmoke().cost) / 100).toFixed(2) }}
           <a href="/cart">
             <Button
                 class="text-sm ml-auto float-right bg-transparent text-black border-black border border-2 hover:bg-black hover:text-white mt-4 mr-4"
@@ -71,6 +71,7 @@ import {capitalize} from "../services/utils.js";
 import Button from "../components/Button.vue";
 import Search from "../components/Search.vue";
 import {header} from "../store/header.js";
+import {getSmoke} from "../store/cost.js";
 
 </script>
 
