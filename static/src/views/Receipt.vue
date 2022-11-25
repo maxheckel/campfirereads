@@ -41,6 +41,7 @@
           <CartLineItem :value="''+data.receipt.books.length" :label="'Items'"></CartLineItem>
           <CartLineItem :value="'$'+(subtotal()/100).toFixed(2)" :label="'Subtotal'"></CartLineItem>
           <CartLineItem :value="'$'+(smoke()).toFixed(2)" :label="'Smoke'"></CartLineItem>
+          <CartLineItem :value="'$'+(shipping()).toFixed(2)" :label="'Shipping'"></CartLineItem>
           <CartLineItem :value="'$'+(total()/100).toFixed(2)" :label="'Total'"></CartLineItem>
 
 
@@ -56,15 +57,25 @@
 import {onMounted, reactive} from "vue";
 import {useRoute} from "vue-router/dist/vue-router";
 import {bookHref, capitalize, imageUrl} from "../services/utils";
+import {getSmoke} from "../store/cost";
 import {clear} from "../store/cart";
 import Loading from "../components/icons/Loading.vue";
 import CartLineItem from "../components/CartLineItem.vue";
 import Header from "../components/Header.vue";
 import Address from "../components/Address.vue";
 import Support from "../components/Support.vue";
+import router from "../router";
 
 const route = useRoute();
 const id = route.params.id
+const clearCart = route.query.clearCart
+
+if (clearCart){
+  clear()
+  let query = Object.assign({}, route.query);
+  delete query.clearCart;
+  router.replace({ query });
+}
 
 const data = reactive({
   receipt: {},
@@ -94,6 +105,10 @@ function subtotal() {
 
 function smoke() {
   return data.receipt.books.length * 10;
+}
+
+function shipping(){
+  return data.receipt.shippingCost.amountInCents/100;
 }
 
 function orderedOn(){

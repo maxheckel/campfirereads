@@ -86,27 +86,28 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 		ShippingAddressCollection: &stripe.CheckoutSessionShippingAddressCollectionParams{
 			AllowedCountries: []*string{stripe.String("US")},
 		},
-		//ShippingOptions: []*stripe.CheckoutSessionShippingOptionParams{
-		//	{
-		//		ShippingRateData: &stripe.CheckoutSessionShippingOptionShippingRateDataParams{
-		//			FixedAmount: &stripe.CheckoutSessionShippingOptionShippingRateDataFixedAmountParams{
-		//				Amount:   stripe.Int64(0),
-		//				Currency: stripe.String(string(stripe.CurrencyUSD)),
-		//			},
-		//			DisplayName: stripe.String("Free shipping"),
-		//			DeliveryEstimate: &stripe.CheckoutSessionShippingOptionShippingRateDataDeliveryEstimateParams{
-		//				Minimum: &stripe.CheckoutSessionShippingOptionShippingRateDataDeliveryEstimateMinimumParams{
-		//					Unit:  stripe.String("business_day"),
-		//					Value: stripe.Int64(5),
-		//				},
-		//				Maximum: &stripe.CheckoutSessionShippingOptionShippingRateDataDeliveryEstimateMaximumParams{
-		//					Unit:  stripe.String("business_day"),
-		//					Value: stripe.Int64(7),
-		//				},
-		//			},
-		//		},
-		//	},
-		//},
+		ShippingOptions: []*stripe.CheckoutSessionShippingOptionParams{
+			{
+				ShippingRateData: &stripe.CheckoutSessionShippingOptionShippingRateDataParams{
+					Type: stripe.String("fixed_amount"),
+					FixedAmount: &stripe.CheckoutSessionShippingOptionShippingRateDataFixedAmountParams{
+						Amount:   stripe.Int64(499),
+						Currency: stripe.String(string(stripe.CurrencyUSD)),
+					},
+					DisplayName: stripe.String("Standard Shipping"),
+					DeliveryEstimate: &stripe.CheckoutSessionShippingOptionShippingRateDataDeliveryEstimateParams{
+						Minimum: &stripe.CheckoutSessionShippingOptionShippingRateDataDeliveryEstimateMinimumParams{
+							Unit:  stripe.String("business_day"),
+							Value: stripe.Int64(5),
+						},
+						Maximum: &stripe.CheckoutSessionShippingOptionShippingRateDataDeliveryEstimateMaximumParams{
+							Unit:  stripe.String("business_day"),
+							Value: stripe.Int64(7),
+						},
+					},
+				},
+			},
+		},
 	}
 	stripeSession, err := session.New(params)
 	if err != nil {
@@ -143,12 +144,20 @@ func (s *stripeService) GetOrder(id string) (*domain.Receipt, error) {
 	sessionParams := stripe.CheckoutSessionParams{}
 	sessionParams.AddExpand("customer")
 	sessionParams.AddExpand("payment_intent")
+	sessionParams.AddExpand("shipping_cost.shipping_rate")
 	stripeSession, err := session.Get(id, &sessionParams)
 	if err != nil {
 		return nil, err
 	}
 
 	receipt.OrderedOn = time.Unix(stripeSession.Created, 0)
+
+	receipt.ShippingCost = domain.ShippingCost{
+		AmountInCents: stripeSession.ShippingCost.AmountTotal,
+		MinDays:       stripeSession.ShippingCost.ShippingRate.DeliveryEstimate.Minimum.Value,
+		MaxDays:       stripeSession.ShippingCost.ShippingRate.DeliveryEstimate.Maximum.Value,
+		Name:          stripeSession.ShippingCost.ShippingRate.DisplayName,
+	}
 
 	receipt.Customer = domain.Customer{
 		Name:        stripeSession.CustomerDetails.Name,
