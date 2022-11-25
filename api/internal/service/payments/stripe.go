@@ -91,7 +91,7 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 				ShippingRateData: &stripe.CheckoutSessionShippingOptionShippingRateDataParams{
 					Type: stripe.String("fixed_amount"),
 					FixedAmount: &stripe.CheckoutSessionShippingOptionShippingRateDataFixedAmountParams{
-						Amount:   stripe.Int64(499),
+						Amount:   stripe.Int64(int64(499 * len(lineItems))),
 						Currency: stripe.String(string(stripe.CurrencyUSD)),
 					},
 					DisplayName: stripe.String("Standard Shipping"),

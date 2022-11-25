@@ -34,7 +34,9 @@
           <template v-if="!loadingAnyPrices()">
             <CartLineItem :value="'$'+(subtotal()/100).toFixed(2)" :label="'Subtotal'"></CartLineItem>
             <CartLineItem :value="'$'+(smoke()).toFixed(2)" :label="'Smoke'"></CartLineItem>
-            <CartLineItem :value="'$'+(total()/100).toFixed(2)" :label="'Total'"></CartLineItem>
+            <CartLineItem :value="'TBD'" :label="'Shipping'"></CartLineItem>
+            <CartLineItem :value="'$'+(total()/100).toFixed(2)" :label="'Total Before Shipping'"></CartLineItem>
+
 
             <Button @click="goToCheckout()" v-if="!data.loadingCheckout" class="w-full text-center mt-10"
                     :text="'Proceed to Checkout'"></Button>
