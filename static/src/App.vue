@@ -4,13 +4,16 @@ import {cart, loadFromLS} from "./store/cart.js";
 import {onMounted} from "vue";
 import AppHeader from "./components/AppHeader.vue";
 
+
 onMounted(() => {
   loadFromLS()
 })
 </script>
 
 <template class="min-h-screen">
+
   <AppHeader/>
+
   <router-view/>
   <div class="footer-head w-full h-[100px] bg-np-dark-brown mt-20"></div>
   <footer class="w-full p-4 bg-np-dark-brown ">
