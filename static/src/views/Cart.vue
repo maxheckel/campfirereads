@@ -12,7 +12,7 @@
             <h2 class="text-2xl">{{ item.book.volumeInfo.title }}</h2>
             <div class="italic">By {{ item.book.volumeInfo.authors.join(', ').trim(', ') }}</div>
             <div v-if="!data.isbnToLoadingPrice[bookToISBN(item.book)]">
-              {{ capitalize(item.listing.type) }} ${{ ((item.listing.price_in_cents + getSmoke().cost) / 100).toFixed(2) }}
+              {{ capitalize(item.listing.type) }} ${{ (item.listing.price_in_cents / 100).toFixed(2) }}
             </div>
             <div v-else>
               Loading Price...
@@ -83,7 +83,7 @@ function loadingAnyPrices() {
 
 // Refresh the prices if they're > 1d old.  This prevents us from having skew when checking out.
 onMounted(() => {
-  var OneDay = new Date().getTime() - (24 * 60 * 60 * getSmoke().cost)
+  var OneDay = new Date().getTime() - (24 * 60 * 60 * 1000)
   cart.items.forEach((item) => {
     if (item.listing.price_in_cents <= 0){
 
@@ -165,14 +165,15 @@ function subtotal() {
 }
 
 function smoke() {
-  return cart.items.length * getSmoke().cost/100;
+  return getSmoke().cost/100;
 }
 
 function total() {
   let total = 0;
   for (let x = 0; x < cart.items.length; x++) {
-    total += cart.items[x].listing.price_in_cents + getSmoke().cost;
+    total += cart.items[x].listing.price_in_cents;
   }
+  total += getSmoke().cost
   return total;
 }
 </script>

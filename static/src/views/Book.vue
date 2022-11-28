@@ -40,7 +40,7 @@
               </div>
               <div v-else-if="getListings().length > 0" class="text-xl my-2">
                 {{ capitalize(getListingsWithPrice()[0].type) }}
-                $({{ ((getListingsWithPrice()[0].price_in_cents + getSmoke().cost) / 100).toFixed(2) }}
+                ${{ (getListingsWithPrice()[0].price_in_cents / 100).toFixed(2) }}
               </div>
             </div>
 
@@ -59,7 +59,7 @@
             <option :value="i" :selected="data.selectedListing == i" v-for="(listing, i) in getListings()"
                     :disabled="listing.price_in_cents === -1">
               <template v-if="listing.price_in_cents !== -1">
-                {{ capitalize(listing.type) }} ${{ ((listing.price_in_cents + getSmoke().cost) / 100).toFixed(2) }}
+                {{ capitalize(listing.type) }} ${{ (listing.price_in_cents / 100).toFixed(2) }}
               </template>
               <template v-else>
                 {{ capitalize(listing.type) }} - Out Of Stock
@@ -191,11 +191,11 @@ function getListings() {
 
 
 function lowestPrice() {
-  return getListingsWithPrice().sort((a, b) => a.price_in_cents - b.price_in_cents)[0].price_in_cents + getSmoke().cost
+  return getListingsWithPrice().sort((a, b) => a.price_in_cents - b.price_in_cents)[0].price_in_cents
 }
 
 function highestPrice() {
-  return getListingsWithPrice().sort((a, b) => b.price_in_cents - a.price_in_cents)[0].price_in_cents + getSmoke().cost
+  return getListingsWithPrice().sort((a, b) => b.price_in_cents - a.price_in_cents)[0].price_in_cents
 }
 
 function description() {

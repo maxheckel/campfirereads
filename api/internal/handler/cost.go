@@ -7,5 +7,5 @@ import (
 )
 
 func (a *APIHandler) GetCost(c *gin.Context) {
-	c.String(200, fmt.Sprintf("%d", config.SmokeCostPerUnit))
+	c.String(200, fmt.Sprintf("%d", config.SmokeCostPerOrder))
 }

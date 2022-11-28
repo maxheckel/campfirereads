@@ -2,7 +2,8 @@ package config
 
 import "github.com/kelseyhightower/envconfig"
 
-var SmokeCostPerUnit = int64(1000)
+var SmokeCostPerOrder = int64(1000)
+var StandardShippingCost = int64(499)
 
 type Config struct {
 	Port                int32  `envconfig:"SERVER_PORT" required:"true"`

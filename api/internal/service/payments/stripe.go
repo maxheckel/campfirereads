@@ -24,6 +24,7 @@ type stripeService struct {
 
 const isbnKey = "ISBN"
 const amazonURLKey = "amazon_url"
+const isSmokeKey = "is_smoke"
 const listingTypeKey = "listing_type"
 const authorsKey = "authors"
 
@@ -44,6 +45,7 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 	lineItems := make([]*stripe.CheckoutSessionLineItemParams, len(booksWithListings))
 	errs := make([]error, len(booksWithListings))
 	wg := sync.WaitGroup{}
+
 	for i, b := range booksWithListings {
 		i := i
 		wg.Add(1)
@@ -59,7 +61,7 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 				errs[i] = err
 				return
 			}
-			stripePrice, err := s.createOrRetrievePrice(stripeProduct, b.Listing)
+			stripePrice, err := s.createOrRetrievePrice(stripeProduct, b.Listing.PriceInCents, b.Listing.Type)
 			if err != nil {
 				errs[i] = err
 				return
@@ -76,6 +78,21 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 			return "", err
 		}
 	}
+
+	// Add the smoke
+	smokeProduct, err := s.createOrRetrieveSmokeProduct()
+	if err != nil {
+		return "", err
+	}
+	smokePrice, err := s.createOrRetrievePrice(smokeProduct, config.SmokeCostPerOrder, "smoke")
+	if err != nil {
+		return "", err
+	}
+	lineItems = append(lineItems, &stripe.CheckoutSessionLineItemParams{
+		Price:    &smokePrice.ID,
+		Quantity: stripe.Int64(1),
+	})
+
 	params := &stripe.CheckoutSessionParams{
 		SuccessURL:         stripe.String(fmt.Sprintf("%s/receipt/{CHECKOUT_SESSION_ID}?clearCart=true", s.frontendURL)),
 		CancelURL:          stripe.String(fmt.Sprintf("%s/cart", s.frontendURL)),
@@ -86,12 +103,13 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 		ShippingAddressCollection: &stripe.CheckoutSessionShippingAddressCollectionParams{
 			AllowedCountries: []*string{stripe.String("US")},
 		},
+		AllowPromotionCodes: stripe.Bool(true),
 		ShippingOptions: []*stripe.CheckoutSessionShippingOptionParams{
 			{
 				ShippingRateData: &stripe.CheckoutSessionShippingOptionShippingRateDataParams{
 					Type: stripe.String("fixed_amount"),
 					FixedAmount: &stripe.CheckoutSessionShippingOptionShippingRateDataFixedAmountParams{
-						Amount:   stripe.Int64(int64(499 * len(lineItems))),
+						Amount:   stripe.Int64(int64(int(config.StandardShippingCost) * (len(lineItems) - 1))),
 						Currency: stripe.String(string(stripe.CurrencyUSD)),
 					},
 					DisplayName: stripe.String("Standard Shipping"),
@@ -116,13 +134,11 @@ func (s *stripeService) CheckoutURL(booksWithListings []*domain.BookWithListing,
 	return stripeSession.URL, nil
 }
 
-func (s *stripeService) createOrRetrievePrice(product *stripe.Product, listing *domain.AmazonListing) (*stripe.Price, error) {
-	unitAmount := stripe.Int64(listing.PriceInCents + config.SmokeCostPerUnit)
-	if *unitAmount <= config.SmokeCostPerUnit {
-		return nil, fmt.Errorf("unit amount is too low: %d", unitAmount)
-	}
+func (s *stripeService) createOrRetrievePrice(product *stripe.Product, priceInCents int64, listingType string) (*stripe.Price, error) {
+	unitAmount := stripe.Int64(priceInCents)
+
 	query := &stripe.PriceSearchParams{}
-	query.Query = *stripe.String(fmt.Sprintf("product:'%s' AND metadata['%s']:'%s'", product.ID, listingTypeKey, listing.Type))
+	query.Query = *stripe.String(fmt.Sprintf("product:'%s' AND metadata['%s']:'%s'", product.ID, listingTypeKey, listingType))
 	iter := price.Search(query)
 	for iter.Next() {
 		if iter.Price().UnitAmount == *unitAmount {
@@ -135,7 +151,7 @@ func (s *stripeService) createOrRetrievePrice(product *stripe.Product, listing *
 		Currency:   stripe.String(string(stripe.CurrencyUSD)),
 		UnitAmount: unitAmount,
 	}
-	params.AddMetadata(listingTypeKey, listing.Type)
+	params.AddMetadata(listingTypeKey, listingType)
 	return price.New(params)
 }
 
@@ -200,13 +216,20 @@ func (s *stripeService) GetOrder(id string) (*domain.Receipt, error) {
 			return nil, err
 		}
 		if li != nil {
+			var images *domain.Images
+			author := li.Price.Product.Metadata[authorsKey]
+			if len(li.Price.Product.Images) > 0 {
+				images = &domain.Images{SmallThumbnail: li.Price.Product.Images[0], Thumbnail: li.Price.Product.Images[0]}
+			} else {
+				images = &domain.Images{SmallThumbnail: fmt.Sprintf("%s/media/icon.png", s.frontendURL), Thumbnail: fmt.Sprintf("%s/media/icon.png", s.frontendURL)}
+			}
 
 			receipt.Books = append(receipt.Books, domain.BookWithListing{
 				Book: &domain.Book{
 					VolumeInfo: &domain.VolumeInfo{
 						Title:       li.Price.Product.Name,
 						Description: li.Price.Product.Description,
-						ImageLinks:  &domain.Images{SmallThumbnail: li.Price.Product.Images[0], Thumbnail: li.Price.Product.Images[0]},
+						ImageLinks:  images,
 						IndustryIdentifiers: []domain.Identifier{
 							{
 								Type:       "ISBN_13",
@@ -214,7 +237,7 @@ func (s *stripeService) GetOrder(id string) (*domain.Receipt, error) {
 							},
 						},
 						Authors: []string{
-							li.Price.Product.Metadata[authorsKey],
+							author,
 						},
 					},
 				},
@@ -289,6 +312,23 @@ func (s *stripeService) productForBook(book *domain.BookWithListing) (*stripe.Pr
 	createReq.AddMetadata(amazonURLKey, book.Listing.URL.Path)
 	createReq.AddMetadata(isbnKey, book.Book.ISBN())
 	createReq.AddMetadata(authorsKey, strings.Trim(strings.Join(book.Book.VolumeInfo.Authors, ", "), ", "))
+	return product.New(createReq)
+}
+
+func (s *stripeService) createOrRetrieveSmokeProduct() (*stripe.Product, error) {
+	params := &stripe.ProductSearchParams{}
+	params.Query = *stripe.String(fmt.Sprintf("metadata['%s']:'true'", isSmokeKey))
+	iter := product.Search(params)
+	for iter.Next() {
+		return iter.Product(), nil
+	}
+	createReq := &stripe.ProductParams{}
+
+	createReq.Name = stripe.String("Smoke")
+	createReq.AddMetadata(isSmokeKey, "true")
+	createReq.Description = stripe.String("Smokey smell right in your book")
+	createReq.Images = append(createReq.Images, stripe.String(fmt.Sprintf("%s/media/icon.png", s.frontendURL)))
+	createReq.AddMetadata(authorsKey, "Campfire Reads")
 	return product.New(createReq)
 }
 
