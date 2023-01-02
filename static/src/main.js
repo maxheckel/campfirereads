@@ -9,6 +9,6 @@ const app = createApp(App)
 app.use(router)
 app.use(VueGtag,  {
     config: { id: "G-K726D0Q3X5" }
-})
+}, router)
 
 app.mount('#app')
