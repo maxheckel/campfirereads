@@ -6,9 +6,9 @@
 
           <Header :invert="true" class="text-white z-10 block mx-auto justify-center relative" :width-override="'w-10'"
                   :text="displayName()" :icon-path="'/media/arrowhead.svg'"></Header>
-          <span class="text-np-yellow block relative z-10 md:text-2xl tracking-widest md:mt-4"
-                style="font-family: Freehand">
-          Best Sellers
+          <span class="text-np-yellow block relative z-10 md:text-xl tracking-widest md:mt-4"
+                style="">
+          {{data.list?.list?.description ? data.list.list.description : 'NYT Best Sellers'}}
         </span>
         </div>
 

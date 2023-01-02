@@ -47,6 +47,7 @@ type List struct {
 	ListName        string      `json:"list_name"`
 	ListNameEncoded string      `json:"list_name_encoded"`
 	DisplayName     string      `json:"display_name"`
+	Description     string      `json:"description"`
 	Updated         string      `json:"updated"`
 	ListImage       interface{} `json:"list_image"`
 	ListImageWidth  interface{} `json:"list_image_width"`

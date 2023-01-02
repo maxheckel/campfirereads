@@ -6,16 +6,21 @@ import Search from "../components/Search.vue";
 
 const data = reactive({
   bestSellerLists: Object,
-  loading: true
+  loading: false
 })
-onMounted(() => {
-  fetch(import.meta.env.VITE_API_HOST + "bestsellers")
-      .then((response) => response.json())
-      .then((resp) => {
-        data.bestSellerLists = resp.lists
-        data.loading = false
-      });
-})
+
+const categories = [
+  "popular",
+  "camping",
+  "expeditions-disasters-and-adventures",
+  "indigenous-americans",
+  "travel",
+  "hardcover-fiction",
+  "hardcover-nonfiction",
+  "paperback-nonfiction",
+  "young-adult",
+];
+
 </script>
 
 <template class="min-h-screen">
@@ -79,9 +84,7 @@ onMounted(() => {
     </div>
 
     <Search class="my-8"/>
-    <BookList title="Popular Titles" :endpoint="'popular'" :category-link="'/browse/popular'"></BookList>
-    <BookList v-if="!data.loading" class="my-20" v-for="list in data.bestSellerLists" :title="list.list.display_name"
-              :books="list.books" :category-link="'/browse/'+list.list.list_name_encoded"></BookList>
+    <BookList class="mb-16" v-for="category in categories" :endpoint="category" ></BookList>
     <div class="grid-cols-2 md:grid-cols-6 gap-10 grid mt-20" v-if="data.loading">
       <div v-for="i in new Array(48)">
         <ShimmerBox class="w-full h-[250px] bg-gray-200"></ShimmerBox>
@@ -106,21 +109,13 @@ onMounted(() => {
   color: #D7C17F;
   border: 4px solid #F0E9CF;
 
-@media screen and (max-width: 1200px) and (min-width: 1000px) {
-  transform:
+  @media screen and (max-width: 1200px) and (min-width: 1000px) {
+    transform: skewY(10deg);
+  }
 
-skewY(10deg
-
-);
-}
-
-@media screen and (max-width: 600px) {
-  transform:
-
-skewY(11deg
-
-);
-}
+  @media screen and (max-width: 600px) {
+    transform: skewY(11deg);
+  }
 
 }
 .trapezoid {

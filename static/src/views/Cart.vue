@@ -27,6 +27,7 @@
       </div>
 
       <div>
+
         <div class="border border-gray-500 rounded-md h-auto p-4 border-dashed	bg-np-yellow-200">
           <b class="text-lg">Summary</b>
 
@@ -38,6 +39,7 @@
             <CartLineItem :value="'$'+(total()/100).toFixed(2)" :label="'Total Before Shipping'"></CartLineItem>
 
 
+
             <Button @click="goToCheckout()" v-if="!data.loadingCheckout" class="w-full text-center mt-10"
                     :text="'Proceed to Checkout'"></Button>
 
@@ -45,8 +47,9 @@
           </template>
           <Loading class="relative mx-auto" v-if="data.loadingCheckout || loadingAnyPrices()"></Loading>
         </div>
-
+        <Promo class="p-2 mt-2 bg-gray-200 text-np-dark-brown"/>
       </div>
+
     </div>
     <div v-if="cart.items.length == 0" class="text-4xl my-10 ml-16">
       You have no items in your cart
@@ -66,6 +69,7 @@ import CartLineItem from "../components/CartLineItem.vue";
 import {onMounted, reactive} from "vue";
 import Loading from "../components/icons/Loading.vue";
 import {getSmoke} from "../store/cost.js";
+import Promo from "../components/Promo.vue";
 
 const data = reactive({
   loadingCheckout: false,

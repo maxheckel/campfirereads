@@ -38,9 +38,12 @@
               <div v-if="hasTwoListings()" class="">
                 ${{ (lowestPrice() / 100).toFixed(2) }} - ${{ (highestPrice() / 100).toFixed(2) }}
               </div>
-              <div v-else-if="getListings().length > 0" class="text-xl my-2">
+              <div v-else-if="getListingsWithPrice().length > 0" class="text-xl my-2">
                 {{ capitalize(getListingsWithPrice()[0].type) }}
                 ${{ (getListingsWithPrice()[0].price_in_cents / 100).toFixed(2) }}
+              </div>
+              <div v-if="getListingsWithPrice().length == 0">
+                Out of Stock
               </div>
             </div>
 
@@ -55,7 +58,7 @@
           </template>
 
           <select v-model="data.selectedListing" class=" block p-2 px-6 border rounded-md rounded mt-4 text-lg"
-                  v-if="getListings().length > 1 && !data.loading">
+                  v-if="getListingsWithPrice().length > 1 && !data.loading">
             <option :value="i" :selected="data.selectedListing == i" v-for="(listing, i) in getListings()"
                     :disabled="listing.price_in_cents === -1">
               <template v-if="listing.price_in_cents !== -1">
@@ -226,7 +229,7 @@ onMounted(() => {
         console.log(resp)
         data.prices = resp.listings;
         data.loadingPrice = false;
-        if (data.prices.length == 0) {
+        if (data.prices.length == 0 || data.prices.filter((p) => p.price_in_cents > 0).length == 0) {
           data.unavailable = true
         } else {
           // Default the price to whatever the first listing with a price is, assuming there is one.

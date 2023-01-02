@@ -35,8 +35,6 @@ func NewAPI() (*App, error) {
 	srv.Gin.GET("/isbn/:isbn", h.ISBN)
 	srv.Gin.GET("/isbn/:isbn/price", h.Price)
 	srv.Gin.GET("/category/:category", h.Category)
-	srv.Gin.GET("/bestsellers", h.GetBestSellers)
-	srv.Gin.GET("/popular", h.Popular)
 	srv.Gin.POST("/checkout", h.GetCheckoutURL)
 	srv.Gin.GET("/receipt/:id", h.Receipt)
 	srv.Gin.GET("/cost", h.GetCost)
