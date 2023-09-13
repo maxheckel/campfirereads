@@ -1,5 +1,7 @@
 # Campfire Reads
 
+Campfire reads is an all in one ecommerce site built without dependency on a database.  It uses google books' API and crawls Amazon for pricing.  Everything is hooked up to Stripe to manage customers and payments.  All in all this entire site costs $0.06 to run per month on GCP.
+
 Prerequisits for local development:
 * Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
